@@ -43,4 +43,29 @@ function updateItem(items, update) {
   return items.map((item) => item.id === update.id ? update : item);
 }
 
-export { getRandomArrayElement, getTimeInHours, getTimeInMinutes, getTripInfoTitle, getTripInfoStartDate, getTripInfoEndDate, updateItem };
+function sortPointDay(points) {
+  return points.sort((firstPoint, secondPoint) => new Date(firstPoint.date.startTime) - new Date(secondPoint.date.startTime));
+}
+
+function sortPointTime(points) {
+  return points.sort((firstPoint, secondPoint) =>
+    dayjs(firstPoint.date.startTime).diff(dayjs(firstPoint.date.endTime), 'minutes') -
+    dayjs(secondPoint.date.startTime).diff(dayjs(secondPoint.date.endTime), 'minutes'));
+}
+
+function sortPointPrice(points) {
+  return points.sort((firstPoint, secondPoint) => secondPoint.price - firstPoint.price);
+}
+
+export {
+  getRandomArrayElement,
+  getTimeInHours,
+  getTimeInMinutes,
+  getTripInfoTitle,
+  getTripInfoStartDate,
+  getTripInfoEndDate,
+  updateItem,
+  sortPointDay,
+  sortPointTime,
+  sortPointPrice,
+};

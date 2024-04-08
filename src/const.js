@@ -51,4 +51,12 @@ const DESCRIPTION = new Map([
   [4, 'New York City, city and port located at the mouth of the Hudson River, southeastern New York state, northeastern U.S. It is the largest and most influential American metropolis, encompassing Manhattan and Staten islands, the western sections of Long Island, and a small portion of the New York state mainland to the north of Manhattan.']
 ]);
 
-export { TYPE_POINT, PRICE, OFFER, DATE, CITY, DESCRIPTION };
+const SortType = {
+  DAY: 'day',
+  EVENT: 'event',
+  TIME: 'time',
+  PRICE: 'price',
+  OFFERS: 'offers',
+};
+
+export { TYPE_POINT, PRICE, OFFER, DATE, CITY, DESCRIPTION, SortType };

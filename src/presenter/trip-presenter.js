@@ -5,7 +5,8 @@ import PointsListView from '../view/points-list-view';
 import EmptyListView from '../view/empty-list-view';
 import { RenderPosition, render } from '../framework/render';
 import PointPresenter from './point-presenter';
-import { updateItem } from '../utils';
+import { updateItem, sortPointDay, sortPointTime, sortPointPrice } from '../utils';
+import { SortType } from '../const';
 
 export default class TripPresenter {
   #pointsListContainer = new PointsListView();
@@ -13,6 +14,8 @@ export default class TripPresenter {
   #pointsModel = null;
   #tripPoints = null;
   #pointPresenters = new Map();
+  #sortComponent = null;
+  #currentSortType = SortType.DAY;
 
   constructor({ containers, pointsModel }) {
     this.#containers = containers;
@@ -24,7 +27,7 @@ export default class TripPresenter {
   }
 
   #renderBoard() {
-    this.#tripPoints = [...this.#pointsModel.points];
+    this.#tripPoints = sortPointDay([...this.#pointsModel.points]);
 
     render(new FilterView(this.#tripPoints.length), this.#containers.filter);
 
@@ -34,10 +37,50 @@ export default class TripPresenter {
     }
 
     render(new TripInfoView(this.#tripPoints), this.#containers.tripInfo, RenderPosition.AFTERBEGIN);
-    render(new SortView(), this.#containers.event);
+    this.#renderSort();
     render(this.#pointsListContainer, this.#containers.event);
     this.#tripPoints.forEach((point) => this.#renderPoint(point));
   }
+
+  #renderSort() {
+    this.#sortComponent = new SortView({
+      currentSortType: this.#currentSortType,
+      onSortTypeChange: this.#onSortTypeChange,
+    });
+    render(this.#sortComponent, this.#containers.event);
+  }
+
+  #onSortTypeChange = (sortType) => {
+    if (this.#currentSortType === sortType) {
+      return;
+    }
+
+    this.#sortPoints(sortType);
+
+    this.#clearPointsList();
+    this.#tripPoints.forEach((point) => this.#renderPoint(point));
+  };
+
+  #sortPoints = (sortType) => {
+    switch(sortType) {
+      case SortType.DAY:
+        this.#tripPoints = sortPointDay([...this.#tripPoints]);
+        break;
+      case SortType.TIME:
+        this.#tripPoints = sortPointTime([...this.#tripPoints]);
+        break;
+      case SortType.PRICE:
+        this.#tripPoints = sortPointPrice([...this.#tripPoints]);
+        break;
+    }
+
+    this.#currentSortType = sortType;
+  };
+
+  #clearPointsList = () => {
+    this.#pointPresenters.forEach((presenter) => presenter.destroy());
+    this.#pointPresenters.clear();
+  };
 
   #renderPoint(point) {
     const pointPresenter = new PointPresenter({

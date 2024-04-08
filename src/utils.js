@@ -39,4 +39,8 @@ function getTripInfoEndDate(sortedPoints) {
   }
 }
 
-export { getRandomArrayElement, getTimeInHours, getTimeInMinutes, getTripInfoTitle, getTripInfoStartDate, getTripInfoEndDate};
+function updateItem(items, update) {
+  return items.map((item) => item.id === update.id ? update : item);
+}
+
+export { getRandomArrayElement, getTimeInHours, getTimeInMinutes, getTripInfoTitle, getTripInfoStartDate, getTripInfoEndDate, updateItem };

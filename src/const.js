@@ -1,16 +1,18 @@
-const TYPE_POINT = ['Taxi', 'Bus', 'Train', 'Ship', 'Drive', 'Flight', 'Check-in', 'Sightseeing', 'Restaurant'];
+const TYPE_POINT = ['taxi', 'bus', 'train', 'ship', 'drive', 'flight', 'check-in', 'sightseeing', 'restaurant'];
 
 const PRICE = [90, 20, 80, 140, 100, 40, 110, 70, 130, 50];
 
-const OFFER = [
-  ['Order Uber', 40],
-  ['Add luggage', 90],
-  ['Switch to comfort', 35],
-  ['Rent a car', 100],
-  ['Add breakfast', 120],
-  ['Book tickets', 40],
-  ['Lunch in city', 150]
-];
+const OFFER = new Map([
+  ['taxi', [['Order Uber', 40, true], ['Switch to comfort', 35, true], ['Trip with a dog', 55, true], ['Drive fast', 60, true], ['Text communication only', 10, true], ['Add luggage', 90, true]]],
+  ['bus', [['Trip with a cat', 45, true], ['Book tickets', 30, true], ['Add luggage', 85, true], ['Reclining seat', 55, true]]],
+  ['train', [['Book tickets', 40, true], ['Add luggage', 75, true], ['Reclining seat', 80, true]]],
+  ['ship', [['Trip with a pet', 100, true], ['Add big luggage', 105, true], ['Book tickets', 60, true], ['Sleeping place', 150, true], ['Add breakfast', 120, true]]],
+  ['drive', [['Rent a car', 100, true], ['Trip with a pet', 80, true], ['Add luggage', 40, true]]],
+  ['flight', [['Reclining seat', 200, true], ['Add breakfast', 190, true], ['Add luggage', 105, true], ['Flight with a pet', 120, true]]],
+  ['check-in', [['Book tickets', 45, true], ['Add luggage', 75, true], ['Add breakfast', 110, true]]],
+  ['sightseeing', [['Lunch in city', 150, true], ['Choose a speaker', 200, true], ['To see a secret place', 120, true]]],
+  ['restaurant', [['Table for two', 105, true], ['Book a table', 55, true], ['Italian cuisine', 35, true], ['Japanese cuisine', 65, true]]],
+]);
 
 const DATE = [
   {

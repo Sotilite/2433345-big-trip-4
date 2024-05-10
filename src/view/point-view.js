@@ -5,11 +5,11 @@ import AbstractView from '../framework/view/abstract-view';
 function createNewPointOfferTemplate(offer) {
   return (
     `<ul class="event__selected-offers">
-      ${offer.reduce((acc, [title, price]) => (`${acc}<li class="event__offer">
+      ${offer.reduce((acc, [title, price, isCheched]) => (acc += isCheched ? `<li class="event__offer">
         <span class="event__offer-title">${title}</span>
           &plus;&euro;&nbsp;
         <span class="event__offer-price">${price}</span>
-      </li>`), '')}
+      </li>` : ''), '')}
     </ul>`);
 }
 
@@ -36,7 +36,7 @@ function createNewPointTemplate(point) {
           <p class="event__duration">${hours} ${minutes}</p>
         </div>
         <p class="event__price">
-          &euro;&nbsp;<span class="event__price-value">${price}</span>
+          &euro;&nbsp;<span class="event__price-value">${price ? price : ''}</span>
         </p>
         <h4 class="visually-hidden">Offers:</h4>
 

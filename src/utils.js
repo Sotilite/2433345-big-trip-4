@@ -4,14 +4,19 @@ function getRandomArrayElement(array) {
   return array[Math.floor(Math.random() * array.length)];
 }
 
+function getTimeInDays(startTime, endTime) {
+  const days = dayjs(endTime).diff(dayjs(startTime), 'days');
+  return days !== 0 ? `${days}D` : '';
+}
+
 function getTimeInHours(startTime, endTime) {
-  const hours = dayjs(endTime).diff(dayjs(startTime), 'hours');
-  return hours !== 0 ? `${hours} H` : '';
+  const hours = dayjs(endTime).diff(dayjs(startTime), 'hours') % 24;
+  return hours !== 0 ? `${hours}H` : '';
 }
 
 function getTimeInMinutes(startTime, endTime) {
   const minutes = dayjs(endTime).diff(dayjs(startTime), 'minutes') % 60;
-  return minutes !== 0 ? `${minutes} M` : '';
+  return minutes !== 0 ? `${minutes}M` : '';
 }
 
 function getTripInfoTitle(cities) {
@@ -59,6 +64,7 @@ function sortPointPrice(points) {
 
 export {
   getRandomArrayElement,
+  getTimeInDays,
   getTimeInHours,
   getTimeInMinutes,
   getTripInfoTitle,

@@ -16,24 +16,28 @@ const OFFER = new Map([
 
 const DATE = [
   {
-    startTime: '2024-03-18T10:30',
+    startTime: '2024-03-18T10:15',
     endTime: '2024-03-18T16:00'
   },
   {
     startTime: '2024-03-18T16:20',
-    endTime: '2024-03-18T17:00'
+    endTime: '2024-03-19T18:00'
   },
   {
     startTime: '2024-03-19T14:20',
     endTime: '2024-03-19T15:00'
   },
   {
-    startTime: '2024-03-19T16:00',
+    startTime: '2024-03-19T15:30',
     endTime: '2024-03-19T17:00'
   },
   {
-    startTime: '2024-03-19T18:00',
-    endTime: '2024-03-19T19:00'
+    startTime: '2024-03-20T18:00',
+    endTime: '2024-03-20T20:30'
+  },
+  {
+    startTime: '2024-03-21T13:00',
+    endTime: '2024-03-21T16:30'
   }
 ];
 

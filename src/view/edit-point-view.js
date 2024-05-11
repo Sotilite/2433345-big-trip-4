@@ -1,6 +1,9 @@
 import dayjs from 'dayjs';
+import flatpickr from 'flatpickr';
+import 'flatpickr/dist/flatpickr.min.css';
 import AbstractStatefulView from '../framework/view/abstract-stateful-view';
-import { TYPE_POINT } from '../const';
+import { getMockDestination } from '../mock/destination';
+import { TYPE_POINT, OFFER, CITY } from '../const';
 
 const DEFAULT_POINT = {
   id: null,
@@ -125,22 +128,27 @@ function createEditPointTemplate(point) {
 }
 
 export default class EditPointView extends AbstractStatefulView {
-  #point = null;
+  #initialValueOfPoint = null;
   #onEditPointReset = null;
   #onEditPointSubmit = null;
-  #onEditCheckedPoint = null;
-  #onEditInputDestination = null;
-  #onEditTypePoint = null;
+  #onEditSavePoint = null;
+  #datepickerForStart = null;
+  #datepickerForEnd = null;
 
-  constructor({ point = DEFAULT_POINT, onEditPointReset, onEditPointSubmit, onEditCheckedPoint, onEditInputDestination, onEditTypePoint }) {
+  constructor({ point = DEFAULT_POINT, onEditPointReset, onEditPointSubmit, onEditSavePoint }) {
     super();
-    this.#point = point;
+    this._setState(point);
+    this.#initialValueOfPoint = JSON.parse(JSON.stringify(point));
     this.#onEditPointReset = onEditPointReset;
     this.#onEditPointSubmit = onEditPointSubmit;
-    this.#onEditCheckedPoint = onEditCheckedPoint;
-    this.#onEditInputDestination = onEditInputDestination;
-    this.#onEditTypePoint = onEditTypePoint;
+    this.#onEditSavePoint = onEditSavePoint;
+
+    this.#setFlatpickr();
     this._restoreHandlers();
+  }
+
+  get template() {
+    return createEditPointTemplate(this._state);
   }
 
   _restoreHandlers() {
@@ -151,32 +159,118 @@ export default class EditPointView extends AbstractStatefulView {
     this.element.querySelector('.event__type-group').addEventListener('change', this.#editTypePointHandler);
   }
 
+  #setFlatpickr() {
+    const commonConfig = {
+      enableTime: true,
+      dateFormat: 'd/m/y H:i',
+      'time_24hr': true,
+      locale: {
+        firstDayOfWeek: 1,
+      }
+    };
+
+    this.#datepickerForStart = flatpickr(
+      this.element.querySelectorAll('.event__input--time')[0],
+      {
+        ...commonConfig,
+        defaultDate: dayjs(this._state.date.startTime).format('DD/MM/YY HH:mm'),
+        onClose: this.#editStartDateChangeHandler,
+      }
+    );
+
+    this.#datepickerForEnd = flatpickr(
+      this.element.querySelectorAll('.event__input--time')[1],
+      {
+        ...commonConfig,
+        defaultDate: dayjs(this._state.date.endTime).format('DD/MM/YY HH:mm'),
+        onClose: this.#editEndDateChangeHandler,
+      }
+    );
+  }
+
+  #editStartDateChangeHandler = ([fullStartDate, fullEndDate]) => {
+    const startTime = dayjs(fullStartDate).format('YYYY-MM-DDTHH:mm');
+    const endTime = dayjs(fullEndDate).format('YYYY-MM-DDTHH:mm');
+
+    this._setState({
+      ...this._state,
+      date: {
+        startTime,
+        endTime
+      }
+    });
+  };
+
+  #editEndDateChangeHandler = ([fullDate]) => {
+    const endTime = dayjs(fullDate).format('YYYY-MM-DDTHH:mm');
+    this._setState({
+      ...this._state,
+      date: {
+        startTime: this._state.date.startTime,
+        endTime
+      }
+    });
+  };
+
+  removeElement() {
+    super.removeElement();
+
+    if (this.#datepickerForStart) {
+      this.#datepickerForStart.destroy();
+      this.#datepickerForStart = null;
+    }
+
+    if (this.#datepickerForEnd) {
+      this.#datepickerForEnd.destroy();
+      this.#datepickerForEnd = null;
+    }
+  }
+
   #editPointResetHandler = (evt) => {
     evt.preventDefault();
-    this.#onEditPointReset();
+    this.#onEditPointReset(this.#initialValueOfPoint);
   };
 
   #editPointSubmitHandler = (evt) => {
     evt.preventDefault();
+    this.#onEditSavePoint(this._state);
     this.#onEditPointSubmit();
   };
 
   #editCheckedPointHandler = (evt) => {
     evt.preventDefault();
-    this.#onEditCheckedPoint(this.#point.offer, evt.currentTarget.attributes[0].ownerDocument.activeElement.id);
+    const offer = this._state.offer;
+    const checkedOffer = evt.currentTarget.attributes[0].ownerDocument.activeElement.id;
+    const cleanCheckedOffer = checkedOffer.split('-')[2];
+    const id = offer.findIndex((item) => item[0] === cleanCheckedOffer);
+    offer[id][2] = !offer[id][2];
+    this._setState({
+      ...this._state,
+      offer,
+    });
   };
 
   #editPointInputHandler = (evt) => {
     evt.preventDefault();
-    this.#onEditInputDestination(evt.currentTarget.value);
+    const currentCity = evt.currentTarget.value;
+    const id = Array.from(CITY.values()).indexOf(currentCity);
+    this.updateElement({
+      city: currentCity,
+      destination: getMockDestination(id),
+    });
   };
 
   #editTypePointHandler = (evt) => {
     evt.preventDefault();
-    this.#onEditTypePoint(evt.target.value);
+    const typePoint = evt.target.value;
+    const offer = OFFER.get(typePoint);
+    const newOffer = offer.map((item) => {
+      item[2] = false;
+      return item;
+    });
+    this.updateElement({
+      type: typePoint,
+      offer: newOffer,
+    });
   };
-
-  get template() {
-    return createEditPointTemplate(this.#point);
-  }
 }

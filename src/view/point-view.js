@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import { getTimeInHours, getTimeInMinutes } from '../utils';
+import { getTimeInDays, getTimeInHours, getTimeInMinutes } from '../utils';
 import AbstractView from '../framework/view/abstract-view';
 
 function createNewPointOfferTemplate(offer) {
@@ -15,6 +15,7 @@ function createNewPointOfferTemplate(offer) {
 
 function createNewPointTemplate(point) {
   const { type, city, price, date, offer, isFavorite } = point;
+  const days = getTimeInDays(date.startTime, date.endTime);
   const hours = getTimeInHours(date.startTime, date.endTime);
   const minutes = getTimeInMinutes(date.startTime, date.endTime);
   const eventFavoriteClass = isFavorite ? 'event__favorite-btn--active' : '';
@@ -22,7 +23,7 @@ function createNewPointTemplate(point) {
   return (
     `<li class="trip-events__item">
       <div class="event">
-        <time class="event__date" datetime="${date.startTime}">${dayjs(date.startTime).format('DD MMM')}</time>
+        <time class="event__date" datetime="${date.startTime}">${dayjs(date.startTime).format('MMM DD')}</time>
         <div class="event__type">
           <img class="event__type-icon" width="42" height="42" src="img/icons/${type}.png" alt="Event type icon">
         </div>
@@ -33,7 +34,7 @@ function createNewPointTemplate(point) {
               &mdash;
             <time class="event__end-time" datetime="${date.endTime}">${dayjs(date.endTime).format('HH:mm')}</time>
           </p>
-          <p class="event__duration">${hours} ${minutes}</p>
+          <p class="event__duration">${days} ${hours} ${minutes}</p>
         </div>
         <p class="event__price">
           &euro;&nbsp;<span class="event__price-value">${price ? price : ''}</span>

@@ -8,7 +8,7 @@ import PointsListView from '../view/points-list-view';
 import EmptyListView from '../view/empty-list-view';
 import { RenderPosition, remove, render } from '../framework/render';
 import { sortPointDay, sortPointTime, sortPointPrice, filter } from '../utils';
-import { SortType, UpdateType, UserAction, Mode } from '../const';
+import { SortType, UpdateType, UserAction, Mode, FilterType } from '../const';
 
 export default class TripPresenter {
   #pointsListContainer = new PointsListView();
@@ -16,22 +16,22 @@ export default class TripPresenter {
   #pointsModel = null;
   #filterModel = new FilterModel();
   #filterPresenter = null;
+  #newPointPresenter = null;
   #pointPresenters = new Map();
   #emptyListComponent = null;
   #tripInfoComponent = null;
   #sortComponent = null;
   #currentSortType = SortType.DAY;
-  #addPointBtn = null;
+  #newEventBtn = null;
   #mode = Mode.DEFAULT;
 
-  constructor({ containers, pointsModel, addPointBtn }) {
+  constructor({ containers, pointsModel, newEventBtn }) {
     this.#containers = containers;
     this.#pointsModel = pointsModel;
+    this.#newEventBtn = newEventBtn;
     this.#filterModel.addObserver(this.#handleModelEvent);
     this.#pointsModel.addObserver(this.#handleModelEvent);
-    this.#addPointBtn = addPointBtn;
-
-    this.#addPointBtn.addEventListener('click', this.#handleCreateNewPoint);
+    this.#newEventBtn.addEventListener('click', this.#handleCreateNewPoint);
   }
 
   get points() {
@@ -114,21 +114,29 @@ export default class TripPresenter {
   #handleCreateNewPoint = (evt) => {
     evt.preventDefault();
     if (this.#mode !== Mode.CREATING) {
-      this.#mode = Mode.CREATING;
       this.#renderNewPoint();
-      document.getElementsByClassName('trip-main__event-add-btn')[0].disabled = true;
+      this.#newEventBtn.disabled = true;
     }
   };
 
   #renderNewPoint() {
-    const newPointPresenter = new NewPointPresenter({
+    this.#filterModel.setFilter(UpdateType.MAJOR, FilterType.EVERYTHING);
+    this.#mode = Mode.CREATING;
+
+    this.#newPointPresenter = new NewPointPresenter({
       pointsListContainer: this.#pointsListContainer.element,
       onDataChange: this.#handleViewAction,
+      onResetMode: this.#handleResetMode,
+      newEventBtn: this.#newEventBtn,
       mode: this.#mode,
     });
-    newPointPresenter.init();
-    //this.#pointPresenters.set(newPointPresenter);
+    this.#newPointPresenter.init();
+    this.#pointPresenters.forEach((presenter) => presenter.resetView());
   }
+
+  #handleResetMode = () => {
+    this.#mode = Mode.DEFAULT;
+  };
 
   #renderPoint(point) {
     const pointPresenter = new PointPresenter({
@@ -142,10 +150,13 @@ export default class TripPresenter {
   }
 
   #handleModeChange = () => {
+    if (this.#newPointPresenter) {
+      this.#newPointPresenter.destroy();
+    }
     this.#pointPresenters.forEach((presenter) => presenter.resetView());
   };
 
-  #handleViewAction = (actionType, updateType, updatedPoint, mode) => {
+  #handleViewAction = (actionType, updateType, updatedPoint) => {
     switch(actionType) {
       case UserAction.UPDATE_TASK:
         this.#pointsModel.updatePoint(updateType, updatedPoint);
@@ -156,7 +167,6 @@ export default class TripPresenter {
       case UserAction.DELETE_TASK:
         this.#pointsModel.deletePoint(updateType, updatedPoint);
     }
-    this.#mode = mode;
   };
 
   #handleModelEvent = (updateType, data) => {

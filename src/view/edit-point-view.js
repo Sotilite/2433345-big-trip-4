@@ -1,3 +1,4 @@
+import he from 'he';
 import dayjs from 'dayjs';
 import flatpickr from 'flatpickr';
 import 'flatpickr/dist/flatpickr.min.css';
@@ -5,8 +6,6 @@ import AbstractStatefulView from '../framework/view/abstract-stateful-view';
 import { TYPE_POINT, OFFERS, CITY, Mode } from '../const';
 import { getRandomDestination } from '../mock/destination';
 import { getDefaultPoint } from '../mock/route-point';
-
-const DEFAULT_POINT = getDefaultPoint();
 
 function createEditTypePointTemplate(currentType) {
   return (
@@ -76,7 +75,7 @@ function createEditPointTemplate(point, mode) {
             <label class="event__label  event__type-output" for="event-destination-1">
               ${type}
             </label>
-            <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${city}" list="destination-list-1">
+            <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${he.encode(city)}" list="destination-list-1">
             <datalist id="destination-list-1">
               <option value="Amsterdam"></option>
               <option value="Geneva"></option>
@@ -99,7 +98,7 @@ function createEditPointTemplate(point, mode) {
               <span class="visually-hidden">Price</span>
                 &euro;
             </label>
-            <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="${price ? price : ''}">
+            <input class="event__input  event__input--price" id="event-price-1" type="number" name="event-price" value="${price ? he.encode(String(price)) : ''}">
           </div>
 
           <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
@@ -129,7 +128,7 @@ export default class EditPointView extends AbstractStatefulView {
   #datepickerForEnd = null;
   #mode = null;
 
-  constructor({ point = DEFAULT_POINT, onEditPointReset, onEditPointSave, onEditDeletePoint, mode = Mode.EDITING }) {
+  constructor({ point = getDefaultPoint(), onEditPointReset, onEditPointSave, onEditDeletePoint, mode = Mode.EDITING }) {
     super();
     this._setState(point);
     this.#oldState = JSON.parse(JSON.stringify(point));
@@ -149,10 +148,11 @@ export default class EditPointView extends AbstractStatefulView {
     if (this.#mode === Mode.EDITING) {
       this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#editPointResetHandler);
     }
-    this.element.querySelector('.event__save-btn').addEventListener('click', this.#editPointSaveHandler);
-    this.element.querySelector('.event__available-offers').addEventListener('change', this.#editCheckedPointHandler);
-    this.element.querySelector('.event__input--destination').addEventListener('change', this.#editPointInputHandler);
     this.element.querySelector('.event__type-group').addEventListener('change', this.#editTypePointHandler);
+    this.element.querySelector('.event__input--destination').addEventListener('change', this.#editInputPointHandler);
+    this.element.querySelector('.event__input--price').addEventListener('change', this.#editPricePointHandler);
+    this.element.querySelector('.event__available-offers').addEventListener('change', this.#editCheckedPointHandler);
+    this.element.querySelector('.event__save-btn').addEventListener('click', this.#editPointSaveHandler);
     this.element.querySelector('.event__reset-btn').addEventListener('click', this.#editDeletePointHandler);
     this.#setFlatpickr();
   }
@@ -218,39 +218,6 @@ export default class EditPointView extends AbstractStatefulView {
     }
   }
 
-  #editPointResetHandler = (evt) => {
-    evt.preventDefault();
-    this.#handleEditPointReset(this.#oldState);
-  };
-
-  #editPointSaveHandler = (evt) => {
-    evt.preventDefault();
-    this.#handleEditPointSave(this._state);
-  };
-
-  #editCheckedPointHandler = (evt) => {
-    evt.preventDefault();
-    const offers = this._state.offers;
-    const checkedOffer = evt.currentTarget.attributes[0].ownerDocument.activeElement.id;
-    const cleanCheckedOffer = checkedOffer.split('-')[2];
-    const id = offers.findIndex((item) => item[0] === cleanCheckedOffer);
-    offers[id][2] = !offers[id][2];
-    this._setState({
-      ...this._state,
-      offers,
-    });
-  };
-
-  #editPointInputHandler = (evt) => {
-    evt.preventDefault();
-    const currentCity = evt.currentTarget.value;
-    const id = Array.from(CITY.values()).indexOf(currentCity);
-    this.updateElement({
-      city: currentCity,
-      destination: getRandomDestination(id),
-    });
-  };
-
   #editTypePointHandler = (evt) => {
     evt.preventDefault();
     const typePoint = evt.target.value;
@@ -265,8 +232,53 @@ export default class EditPointView extends AbstractStatefulView {
     });
   };
 
+  #editInputPointHandler = (evt) => {
+    evt.preventDefault();
+    const currentCity = evt.currentTarget.value;
+    const id = Array.from(CITY.values()).indexOf(currentCity);
+    if (id === -1) {
+      return;
+    }
+
+    this.updateElement({
+      city: currentCity,
+      destination: getRandomDestination(id),
+    });
+  };
+
+  #editPricePointHandler = (evt) => {
+    evt.preventDefault();
+    const price = Number(evt.currentTarget.value);
+    this.updateElement({
+      price,
+    });
+  };
+
+  #editPointSaveHandler = (evt) => {
+    evt.preventDefault();
+    this.#handleEditPointSave(this._state);
+  };
+
   #editDeletePointHandler = (evt) => {
     evt.preventDefault();
     this.#handleEditDeletePoint(this._state);
+  };
+
+  #editPointResetHandler = (evt) => {
+    evt.preventDefault();
+    this.#handleEditPointReset(this.#oldState);
+  };
+
+  #editCheckedPointHandler = (evt) => {
+    evt.preventDefault();
+    const offers = this._state.offers;
+    const checkedOffer = evt.currentTarget.attributes[0].ownerDocument.activeElement.id;
+    const cleanCheckedOffer = checkedOffer.split('-')[2];
+    const id = offers.findIndex((item) => item[0] === cleanCheckedOffer);
+    offers[id][2] = !offers[id][2];
+    this._setState({
+      ...this._state,
+      offers,
+    });
   };
 }

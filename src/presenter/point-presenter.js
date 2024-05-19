@@ -94,17 +94,16 @@ export default class PointPresenter {
     this.#handleDataChange(
       UserAction.UPDATE_TASK,
       UpdateType.PATCH,
-      { ...this.#point, isFavorite: !this.#point.isFavorite }
+      { ...this.#point, isFavorite: !this.#point.isFavorite },
     );
   };
 
   #handleEditPointReset = (oldPoint) => {
-    //this.#replaceFormToPoint();
+    this.#replaceFormToPoint();
     this.#handleEditPointSave(oldPoint);
   };
 
   #handleEditPointSave = (updatedPoint) => {
-    this.#replaceFormToPoint();
     const isMinorUpdate = dayjs(updatedPoint.dateFrom).isSame(this.#point.dateFrom)
     || dayjs(updatedPoint.dateTo).isSame(this.#point.dateTo)
     || updatedPoint.price === this.#point.price;

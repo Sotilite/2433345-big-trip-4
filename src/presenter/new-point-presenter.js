@@ -1,21 +1,25 @@
 import EditPointView from '../view/edit-point-view';
 import { RenderPosition, remove, render } from '../framework/render';
-import { UserAction, UpdateType, Mode } from '../const';
+import { UserAction, UpdateType } from '../const';
 
 export default class NewPointPresenter {
   #pointsListContainer = null;
   #editPointComponent = null;
   #handleDataChange = null;
+  #handleResetMode = null;
+  #newEventBtn = null;
   #mode = null;
 
-  constructor({ pointsListContainer, onDataChange, mode }) {
+  constructor({ pointsListContainer, onDataChange, onResetMode, newEventBtn, mode }) {
     this.#pointsListContainer = pointsListContainer;
     this.#handleDataChange = onDataChange;
+    this.#handleResetMode = onResetMode;
+    this.#newEventBtn = newEventBtn;
     this.#mode = mode;
   }
 
   init() {
-    if (this.#editPointComponent !== null) {
+    if (this.#editPointComponent) {
       return;
     }
 
@@ -26,30 +30,31 @@ export default class NewPointPresenter {
     });
 
     render(this.#editPointComponent, this.#pointsListContainer, RenderPosition.AFTERBEGIN);
+    document.addEventListener('keydown', this.#escKeyDownHandler);
   }
 
   destroy() {
-    if (this.#editPointComponent === null) {
+    if (!this.#editPointComponent) {
       return;
     }
+
+    this.#newEventBtn.disabled = false;
+    this.#handleResetMode();
     remove(this.#editPointComponent);
     this.#editPointComponent = null;
     document.removeEventListener('keydown', this.#escKeyDownHandler);
   }
 
   #handleEditPointSave = (updatedPoint) => {
-    document.getElementsByClassName('trip-main__event-add-btn')[0].disabled = false;
+    this.destroy();
     this.#handleDataChange(
       UserAction.ADD_TASK,
       UpdateType.MAJOR,
       updatedPoint,
-      Mode.DEFAULT,
     );
-    this.destroy();
   };
 
   #handleEditCancelPoint = () => {
-    document.getElementsByClassName('trip-main__event-add-btn')[0].disabled = false;
     this.destroy();
   };
 

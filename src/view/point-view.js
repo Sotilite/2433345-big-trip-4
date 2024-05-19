@@ -2,11 +2,11 @@ import dayjs from 'dayjs';
 import { getTimeInDays, getTimeInHours, getTimeInMinutes } from '../utils';
 import AbstractView from '../framework/view/abstract-view';
 
-function createNewPointOfferTemplate(offer) {
+function createNewPointOfferTemplate(offers) {
   return (
     `<ul class="event__selected-offers">
-      ${offer.reduce((acc, [title, price, isCheched]) => (acc += isCheched ? `<li class="event__offer">
-        <span class="event__offer-title">${title}</span>
+      ${offers.reduce((acc, [offer, price, isCheched]) => (acc += isCheched ? `<li class="event__offer">
+        <span class="event__offer-title">${offer}</span>
           &plus;&euro;&nbsp;
         <span class="event__offer-price">${price}</span>
       </li>` : ''), '')}
@@ -14,25 +14,25 @@ function createNewPointOfferTemplate(offer) {
 }
 
 function createNewPointTemplate(point) {
-  const { type, city, price, date, offer, isFavorite } = point;
-  const days = getTimeInDays(date.startTime, date.endTime);
-  const hours = getTimeInHours(date.startTime, date.endTime);
-  const minutes = getTimeInMinutes(date.startTime, date.endTime);
+  const { type, city, price, dateFrom, dateTo, offers, isFavorite } = point;
+  const days = getTimeInDays(dateFrom, dateTo);
+  const hours = getTimeInHours(dateFrom, dateTo);
+  const minutes = getTimeInMinutes(dateFrom, dateTo);
   const eventFavoriteClass = isFavorite ? 'event__favorite-btn--active' : '';
 
   return (
     `<li class="trip-events__item">
       <div class="event">
-        <time class="event__date" datetime="${date.startTime}">${dayjs(date.startTime).format('MMM DD')}</time>
+        <time class="event__date" datetime="${dateFrom}">${dayjs(dateFrom).format('MMM DD')}</time>
         <div class="event__type">
           <img class="event__type-icon" width="42" height="42" src="img/icons/${type}.png" alt="Event type icon">
         </div>
         <h3 class="event__title">${type} ${city}</h3>
         <div class="event__schedule">
           <p class="event__time">
-            <time class="event__start-time" datetime="${date.startTime}">${dayjs(date.startTime).format('HH:mm')}</time>
+            <time class="event__start-time" datetime="${dateFrom}">${dayjs(dateFrom).format('HH:mm')}</time>
               &mdash;
-            <time class="event__end-time" datetime="${date.endTime}">${dayjs(date.endTime).format('HH:mm')}</time>
+            <time class="event__end-time" datetime="${dateTo}">${dayjs(dateTo).format('HH:mm')}</time>
           </p>
           <p class="event__duration">${days} ${hours} ${minutes}</p>
         </div>
@@ -41,7 +41,7 @@ function createNewPointTemplate(point) {
         </p>
         <h4 class="visually-hidden">Offers:</h4>
 
-        ${createNewPointOfferTemplate(offer)}
+        ${createNewPointOfferTemplate(offers)}
 
         <button class="event__favorite-btn ${eventFavoriteClass}" type="button">
           <span class="visually-hidden">Add to favorite</span>
@@ -58,30 +58,30 @@ function createNewPointTemplate(point) {
 
 export default class PointView extends AbstractView {
   #point = null;
-  #onEditClick = null;
-  #onFavoriteClick = null;
+  #handleEditClick = null;
+  #handleFavoriteClick = null;
 
   constructor({ point, onEditClick, onFavoriteClick }) {
     super();
     this.#point = point;
-    this.#onEditClick = onEditClick;
-    this.#onFavoriteClick = onFavoriteClick;
+    this.#handleEditClick = onEditClick;
+    this.#handleFavoriteClick = onFavoriteClick;
 
     this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#editClickHandler);
     this.element.querySelector('.event__favorite-btn').addEventListener('click', this.#favoriteClickHandler);
   }
 
+  get template() {
+    return createNewPointTemplate(this.#point);
+  }
+
   #editClickHandler = (evt) => {
     evt.preventDefault();
-    this.#onEditClick();
+    this.#handleEditClick();
   };
 
   #favoriteClickHandler = (evt) => {
     evt.preventDefault();
-    this.#onFavoriteClick();
+    this.#handleFavoriteClick();
   };
-
-  get template() {
-    return createNewPointTemplate(this.#point);
-  }
 }

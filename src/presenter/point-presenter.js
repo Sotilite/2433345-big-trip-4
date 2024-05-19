@@ -1,25 +1,23 @@
 import PointView from '../view/point-view';
 import EditPointView from '../view/edit-point-view';
 import { remove, render, replace } from '../framework/render';
-
-const Mode = {
-  DEFAULT: 'DEFAULT',
-  EDITING: 'EDITING',
-};
+import { UserAction, UpdateType, Mode } from '../const';
+import dayjs from 'dayjs';
 
 export default class PointPresenter {
   #point = null;
   #pointComponent = null;
   #editPointComponent = null;
   #pointsListContainer = null;
-  #onDataChange = null;
-  #onModeChange = null;
-  #mode = Mode.DEFAULT;
+  #handleDataChange = null;
+  #handleModeChange = null;
+  #mode = null;
 
-  constructor({ pointsListContainer, onDataChange, onModeChange }) {
+  constructor({ pointsListContainer, onDataChange, onModeChange, mode }) {
     this.#pointsListContainer = pointsListContainer;
-    this.#onDataChange = onDataChange;
-    this.#onModeChange = onModeChange;
+    this.#handleDataChange = onDataChange;
+    this.#handleModeChange = onModeChange;
+    this.#mode = mode;
   }
 
   init(point) {
@@ -29,14 +27,15 @@ export default class PointPresenter {
 
     this.#pointComponent = new PointView({
       point: this.#point,
-      onEditClick: this.#onEditClick,
-      onFavoriteClick: this.#onFavoriteClick,
+      onEditClick: this.#handleEditClick,
+      onFavoriteClick: this.#handleFavoriteClick,
     });
+
     this.#editPointComponent = new EditPointView({
       point: this.#point,
-      onEditPointReset: this.#onEditPointReset,
-      onEditPointSubmit: this.#onEditPointSubmit,
-      onEditSavePoint: this.#onEditSavePoint,
+      onEditPointReset: this.#handleEditPointReset,
+      onEditPointSave: this.#handleEditPointSave,
+      onEditDeletePoint: this.#handleEditDeletePoint,
     });
 
     if (!prevPointComponent || !prevEditPointComponent) {
@@ -70,7 +69,7 @@ export default class PointPresenter {
   #replacePointToForm = () => {
     replace(this.#editPointComponent, this.#pointComponent);
     document.addEventListener('keydown', this.#escKeydown);
-    this.#onModeChange();
+    this.#handleModeChange();
     this.#mode = Mode.EDITING;
   };
 
@@ -87,29 +86,40 @@ export default class PointPresenter {
     }
   };
 
-  #onEditClick = () => {
+  #handleEditClick = () => {
     this.#replacePointToForm();
   };
 
-  #onEditPointReset = (point) => {
+  #handleFavoriteClick = () => {
+    this.#handleDataChange(
+      UserAction.UPDATE_TASK,
+      UpdateType.PATCH,
+      { ...this.#point, isFavorite: !this.#point.isFavorite },
+    );
+  };
+
+  #handleEditPointReset = (oldPoint) => {
     this.#replaceFormToPoint();
-    this.#onEditSavePoint(point);
+    this.#handleEditPointSave(oldPoint);
   };
 
-  #onEditPointSubmit = () => {
-    this.#replaceFormToPoint();
+  #handleEditPointSave = (updatedPoint) => {
+    const isMinorUpdate = dayjs(updatedPoint.dateFrom).isSame(this.#point.dateFrom)
+    || dayjs(updatedPoint.dateTo).isSame(this.#point.dateTo)
+    || updatedPoint.price === this.#point.price;
+
+    this.#handleDataChange(
+      UserAction.UPDATE_TASK,
+      isMinorUpdate ? UpdateType.MINOR : UpdateType.PATCH,
+      updatedPoint,
+    );
   };
 
-  #onFavoriteClick = () => {
-    this.#onDataChange({
-      ...this.#point,
-      isFavorite: !this.#point.isFavorite,
-    });
-  };
-
-  #onEditSavePoint = (point) => {
-    this.#onDataChange({
-      ...point,
-    });
+  #handleEditDeletePoint = (updatedPoint) => {
+    this.#handleDataChange(
+      UserAction.DELETE_TASK,
+      UpdateType.MINOR,
+      updatedPoint,
+    );
   };
 }

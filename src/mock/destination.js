@@ -2,14 +2,20 @@ import { DESCRIPTION } from '../const';
 
 const IMG_COUNT = 5;
 
-const BOUND = 20;
-
-function getMockDestination(identity) {
+function getRandomDestination(identity) {
   return {
     id: identity,
     description: DESCRIPTION.get(identity),
-    img: Array.from({ length: IMG_COUNT },() => `https://loremflickr.com/248/152?random=${Math.floor(Math.random() * BOUND)}`)
+    img: Array.from({ length: IMG_COUNT },() => `https://loremflickr.com/248/152?random=${crypto.randomUUID()}`)
   };
 }
 
-export { getMockDestination };
+function getDefaultDestination() {
+  return {
+    id: null,
+    description: '',
+    img: null,
+  };
+}
+
+export { getRandomDestination, getDefaultDestination };

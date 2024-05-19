@@ -2,16 +2,16 @@ const TYPE_POINT = ['taxi', 'bus', 'train', 'ship', 'drive', 'flight', 'check-in
 
 const PRICE = [90, 20, 80, 140, 100, 40, 110, 70, 130, 50];
 
-const OFFER = new Map([
-  ['taxi', [['Order Uber', 40, true], ['Switch to comfort', 35, true], ['Trip with a dog', 55, true], ['Drive fast', 60, true], ['Text communication only', 10, true], ['Add luggage', 90, true]]],
-  ['bus', [['Trip with a cat', 45, true], ['Book tickets', 30, true], ['Add luggage', 85, true], ['Reclining seat', 55, true]]],
-  ['train', [['Book tickets', 40, true], ['Add luggage', 75, true], ['Reclining seat', 80, true]]],
-  ['ship', [['Trip with a pet', 100, true], ['Add big luggage', 105, true], ['Book tickets', 60, true], ['Sleeping place', 150, true], ['Add breakfast', 120, true]]],
-  ['drive', [['Rent a car', 100, true], ['Trip with a pet', 80, true], ['Add luggage', 40, true]]],
-  ['flight', [['Reclining seat', 200, true], ['Add breakfast', 190, true], ['Add luggage', 105, true], ['Flight with a pet', 120, true]]],
-  ['check-in', [['Book tickets', 45, true], ['Add luggage', 75, true], ['Add breakfast', 110, true]]],
-  ['sightseeing', [['Lunch in city', 150, true], ['Choose a speaker', 200, true], ['To see a secret place', 120, true]]],
-  ['restaurant', [['Table for two', 105, true], ['Book a table', 55, true], ['Italian cuisine', 35, true], ['Japanese cuisine', 65, true]]],
+const OFFERS = new Map([
+  ['taxi', [['Order Uber', 40, false], ['Switch to comfort', 35, false], ['Trip with a dog', 55, false], ['Drive fast', 60, false], ['Text communication only', 10, false], ['Add luggage', 90, false]]],
+  ['bus', [['Trip with a cat', 45, false], ['Book tickets', 30, false], ['Add luggage', 85, false], ['Reclining seat', 55, false]]],
+  ['train', [['Book tickets', 40, false], ['Add luggage', 75, false], ['Reclining seat', 80, false]]],
+  ['ship', [['Trip with a pet', 100, false], ['Add big luggage', 105, false], ['Book tickets', 60, false], ['Sleeping place', 150, false], ['Add breakfast', 120, false]]],
+  ['drive', [['Rent a car', 100, false], ['Trip with a pet', 80, false], ['Add luggage', 40, false]]],
+  ['flight', [['Reclining seat', 200, false], ['Add breakfast', 190, false], ['Add luggage', 105, false], ['Flight with a pet', 120, false]]],
+  ['check-in', [['Book tickets', 45, false], ['Add luggage', 75, false], ['Add breakfast', 110, false]]],
+  ['sightseeing', [['Lunch in city', 150, false], ['Choose a speaker', 200, false], ['To see a secret place', 120, false]]],
+  ['restaurant', [['Table for two', 105, false], ['Book a table', 55, false], ['Italian cuisine', 35, false], ['Japanese cuisine', 65, false]]],
 ]);
 
 const DATE = [
@@ -20,12 +20,12 @@ const DATE = [
     endTime: '2024-03-18T16:00'
   },
   {
-    startTime: '2024-03-18T16:20',
-    endTime: '2024-03-19T18:00'
+    startTime: '2024-06-18T16:20',
+    endTime: '2024-06-19T18:00'
   },
   {
-    startTime: '2024-03-19T14:20',
-    endTime: '2024-03-19T15:00'
+    startTime: '2024-05-15T14:20',
+    endTime: '2024-05-15T15:00'
   },
   {
     startTime: '2024-03-19T15:30',
@@ -57,6 +57,20 @@ const DESCRIPTION = new Map([
   [4, 'New York City, city and port located at the mouth of the Hudson River, southeastern New York state, northeastern U.S. It is the largest and most influential American metropolis, encompassing Manhattan and Staten islands, the western sections of Long Island, and a small portion of the New York state mainland to the north of Manhattan.']
 ]);
 
+const FilterType = {
+  EVERYTHING: 'everything',
+  FUTURE: 'future',
+  PRESENT: 'present',
+  PAST: 'past',
+};
+
+const FilterMessage = {
+  'everything': 'Click New Event to create your first point',
+  'future': 'There are no future events now',
+  'present': 'There are no present events now',
+  'past': 'There are no past events now',
+};
+
 const SortType = {
   DAY: 'day',
   EVENT: 'event',
@@ -65,4 +79,22 @@ const SortType = {
   OFFERS: 'offers',
 };
 
-export { TYPE_POINT, PRICE, OFFER, DATE, CITY, DESCRIPTION, SortType };
+const UserAction = {
+  UPDATE_TASK: 'UPDATE_TASK',
+  ADD_TASK: 'ADD_TASK',
+  DELETE_TASK: 'DELETE_TASK',
+};
+
+const UpdateType = {
+  PATCH: 'PATCH',
+  MINOR: 'MINOR',
+  MAJOR: 'MAJOR',
+};
+
+const Mode = {
+  DEFAULT: 'DEFAULT',
+  EDITING: 'EDITING',
+  CREATING: 'CREATING',
+};
+
+export { TYPE_POINT, PRICE, OFFERS, DATE, CITY, DESCRIPTION, FilterType, FilterMessage, SortType, UserAction, UpdateType, Mode };

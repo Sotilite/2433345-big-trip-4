@@ -2,18 +2,11 @@ import dayjs from 'dayjs';
 import flatpickr from 'flatpickr';
 import 'flatpickr/dist/flatpickr.min.css';
 import AbstractStatefulView from '../framework/view/abstract-stateful-view';
-import { getMockDestination } from '../mock/destination';
-import { TYPE_POINT, OFFER, CITY } from '../const';
+import { TYPE_POINT, OFFERS, CITY, Mode } from '../const';
+import { getRandomDestination } from '../mock/destination';
+import { getDefaultPoint } from '../mock/route-point';
 
-const DEFAULT_POINT = {
-  id: null,
-  type: null,
-  price: null,
-  date: null,
-  destination: null,
-  offer: null,
-  isFavorite: false,
-};
+const DEFAULT_POINT = getDefaultPoint();
 
 function createEditTypePointTemplate(currentType) {
   return (
@@ -28,16 +21,16 @@ function createEditTypePointTemplate(currentType) {
     </div>`);
 }
 
-function createEditPointOfferTemplate(offer) {
-  if (offer !== null) {
+function createEditPointOfferTemplate(offers) {
+  if (offers !== null) {
     return (
       `<section class="event__section  event__section--offers">
         <h3 class="event__section-title  event__section-title--offers">Offers</h3>
           <div class="event__available-offers">
-            ${offer.reduce((acc, [title, price, isChecked]) => (`${acc}<div class="event__offer-selector">
-              <input class="event__offer-checkbox visually-hidden" id="event-offer-${title}-1" type="checkbox" name="event-offer-${title}" ${isChecked ? 'checked' : ''}>
-              <label class="event__offer-label" for="event-offer-${title}-1">
-                <span class="event__offer-title">${title}</span>
+            ${offers.reduce((acc, [offer, price, isChecked]) => (`${acc}<div class="event__offer-selector">
+              <input class="event__offer-checkbox visually-hidden" id="event-offer-${offer}-1" type="checkbox" name="event-offer-${offer}" ${isChecked ? 'checked' : ''}>
+              <label class="event__offer-label" for="event-offer-${offer}-1">
+                <span class="event__offer-title">${offer}</span>
                   &plus;&euro;&nbsp;
                 <span class="event__offer-price">${price}</span>
               </label>
@@ -62,8 +55,8 @@ function createEditPointPhotoTemplate(img) {
   }
 }
 
-function createEditPointTemplate(point) {
-  const { type, city, price, date, destination, offer } = point;
+function createEditPointTemplate(point, mode) {
+  const { type, city, price, dateFrom, dateTo, destination, offers } = point;
   const { description, img } = destination;
 
   return (
@@ -95,10 +88,10 @@ function createEditPointTemplate(point) {
 
           <div class="event__field-group  event__field-group--time">
             <label class="visually-hidden" for="event-start-time-1">From</label>
-            <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${date ? dayjs(date.startTime).format('DD/MM/YY HH:mm') : ''}">
+            <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${dateFrom ? dayjs(dateTo).format('DD/MM/YY HH:mm') : ''}">
               &mdash;
             <label class="visually-hidden" for="event-end-time-1">To</label>
-            <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${date ? dayjs(date.endTime).format('DD/MM/YY HH:mm') : ''}">
+            <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${dateFrom ? dayjs(dateTo).format('DD/MM/YY HH:mm') : ''}">
           </div>
 
           <div class="event__field-group  event__field-group--price">
@@ -110,15 +103,15 @@ function createEditPointTemplate(point) {
           </div>
 
           <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
-          <button class="event__reset-btn" type="reset">Delete</button>
-          <button class="event__rollup-btn" type="button">
-            <span class="visually-hidden">Open event</span>
-          </button>
+          <button class="event__reset-btn" type="reset">${mode === Mode.EDITING ? 'Delete' : 'Cancel'}</button>
+          ${mode === Mode.EDITING ? '<button class="event__rollup-btn" type="button">\
+            <span class="visually-hidden">Open event</span>\
+          </button>' : ''}
         </header>
         <section class="event__details">
-          ${createEditPointOfferTemplate(offer)}
+          ${createEditPointOfferTemplate(offers, mode)}
           <section class="event__section  event__section--destination">
-            <h3 class="event__section-title  event__section-title--destination">Destination</h3>
+            <h3 class="event__section-title  event__section-title--destination">${description ? 'Destination' : ''}</h3>
             <p class="event__destination-description">${description}</p>
           </section>
           ${createEditPointPhotoTemplate(img)}
@@ -128,35 +121,40 @@ function createEditPointTemplate(point) {
 }
 
 export default class EditPointView extends AbstractStatefulView {
-  #initialValueOfPoint = null;
-  #onEditPointReset = null;
-  #onEditPointSubmit = null;
-  #onEditSavePoint = null;
+  #oldState = null;
+  #handleEditPointReset = null;
+  #handleEditPointSave = null;
+  #handleEditDeletePoint = null;
   #datepickerForStart = null;
   #datepickerForEnd = null;
+  #mode = null;
 
-  constructor({ point = DEFAULT_POINT, onEditPointReset, onEditPointSubmit, onEditSavePoint }) {
+  constructor({ point = DEFAULT_POINT, onEditPointReset, onEditPointSave, onEditDeletePoint, mode = Mode.EDITING }) {
     super();
     this._setState(point);
-    this.#initialValueOfPoint = JSON.parse(JSON.stringify(point));
-    this.#onEditPointReset = onEditPointReset;
-    this.#onEditPointSubmit = onEditPointSubmit;
-    this.#onEditSavePoint = onEditSavePoint;
+    this.#oldState = JSON.parse(JSON.stringify(point));
+    this.#handleEditPointReset = onEditPointReset;
+    this.#handleEditPointSave = onEditPointSave;
+    this.#handleEditDeletePoint = onEditDeletePoint;
+    this.#mode = mode;
 
-    this.#setFlatpickr();
     this._restoreHandlers();
   }
 
   get template() {
-    return createEditPointTemplate(this._state);
+    return createEditPointTemplate(this._state, this.#mode);
   }
 
   _restoreHandlers() {
-    this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#editPointResetHandler);
-    this.element.querySelector('form').addEventListener('submit', this.#editPointSubmitHandler);
+    if (this.#mode === Mode.EDITING) {
+      this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#editPointResetHandler);
+    }
+    this.element.querySelector('.event__save-btn').addEventListener('click', this.#editPointSaveHandler);
     this.element.querySelector('.event__available-offers').addEventListener('change', this.#editCheckedPointHandler);
     this.element.querySelector('.event__input--destination').addEventListener('change', this.#editPointInputHandler);
     this.element.querySelector('.event__type-group').addEventListener('change', this.#editTypePointHandler);
+    this.element.querySelector('.event__reset-btn').addEventListener('click', this.#editDeletePointHandler);
+    this.#setFlatpickr();
   }
 
   #setFlatpickr() {
@@ -173,8 +171,8 @@ export default class EditPointView extends AbstractStatefulView {
       this.element.querySelectorAll('.event__input--time')[0],
       {
         ...commonConfig,
-        defaultDate: dayjs(this._state.date.startTime).format('DD/MM/YY HH:mm'),
-        onClose: this.#editStartDateChangeHandler,
+        defaultDate: dayjs(this._state.dateFrom).format('DD/MM/YY HH:mm'),
+        onClose: this.#editDateFromChangeHandler,
       }
     );
 
@@ -182,33 +180,27 @@ export default class EditPointView extends AbstractStatefulView {
       this.element.querySelectorAll('.event__input--time')[1],
       {
         ...commonConfig,
-        defaultDate: dayjs(this._state.date.endTime).format('DD/MM/YY HH:mm'),
-        onClose: this.#editEndDateChangeHandler,
+        defaultDate: dayjs(this._state.dateTo).format('DD/MM/YY HH:mm'),
+        onClose: this.#editDateToChangeHandler,
       }
     );
   }
 
-  #editStartDateChangeHandler = ([fullStartDate, fullEndDate]) => {
-    const startTime = dayjs(fullStartDate).format('YYYY-MM-DDTHH:mm');
-    const endTime = dayjs(fullEndDate).format('YYYY-MM-DDTHH:mm');
-
+  #editDateFromChangeHandler = ([fullStartDate]) => {
+    const dateFrom = dayjs(fullStartDate).format('YYYY-MM-DDTHH:mm');
     this._setState({
       ...this._state,
-      date: {
-        startTime,
-        endTime
-      }
+      dateFrom,
+      dateTo: this._state.dateTo
     });
   };
 
-  #editEndDateChangeHandler = ([fullDate]) => {
-    const endTime = dayjs(fullDate).format('YYYY-MM-DDTHH:mm');
+  #editDateToChangeHandler = ([fullEndDate]) => {
+    const dateTo = dayjs(fullEndDate).format('YYYY-MM-DDTHH:mm');
     this._setState({
       ...this._state,
-      date: {
-        startTime: this._state.date.startTime,
-        endTime
-      }
+      dateFrom: this._state.dateFrom,
+      dateTo
     });
   };
 
@@ -228,25 +220,24 @@ export default class EditPointView extends AbstractStatefulView {
 
   #editPointResetHandler = (evt) => {
     evt.preventDefault();
-    this.#onEditPointReset(this.#initialValueOfPoint);
+    this.#handleEditPointReset(this.#oldState);
   };
 
-  #editPointSubmitHandler = (evt) => {
+  #editPointSaveHandler = (evt) => {
     evt.preventDefault();
-    this.#onEditSavePoint(this._state);
-    this.#onEditPointSubmit();
+    this.#handleEditPointSave(this._state);
   };
 
   #editCheckedPointHandler = (evt) => {
     evt.preventDefault();
-    const offer = this._state.offer;
+    const offers = this._state.offers;
     const checkedOffer = evt.currentTarget.attributes[0].ownerDocument.activeElement.id;
     const cleanCheckedOffer = checkedOffer.split('-')[2];
-    const id = offer.findIndex((item) => item[0] === cleanCheckedOffer);
-    offer[id][2] = !offer[id][2];
+    const id = offers.findIndex((item) => item[0] === cleanCheckedOffer);
+    offers[id][2] = !offers[id][2];
     this._setState({
       ...this._state,
-      offer,
+      offers,
     });
   };
 
@@ -256,21 +247,26 @@ export default class EditPointView extends AbstractStatefulView {
     const id = Array.from(CITY.values()).indexOf(currentCity);
     this.updateElement({
       city: currentCity,
-      destination: getMockDestination(id),
+      destination: getRandomDestination(id),
     });
   };
 
   #editTypePointHandler = (evt) => {
     evt.preventDefault();
     const typePoint = evt.target.value;
-    const offer = OFFER.get(typePoint);
-    const newOffer = offer.map((item) => {
+    const offers = OFFERS.get(typePoint);
+    const newOffers = offers.map((item) => {
       item[2] = false;
       return item;
     });
     this.updateElement({
       type: typePoint,
-      offer: newOffer,
+      offers: newOffers,
     });
+  };
+
+  #editDeletePointHandler = (evt) => {
+    evt.preventDefault();
+    this.#handleEditDeletePoint(this._state);
   };
 }

@@ -1,42 +1,54 @@
 import dayjs from 'dayjs';
+import { FilterType } from './const';
 
 function getRandomArrayElement(array) {
   return array[Math.floor(Math.random() * array.length)];
 }
 
-function getTimeInDays(startTime, endTime) {
-  const days = dayjs(endTime).diff(dayjs(startTime), 'days');
+function getRandomCheckedOffers(offers) {
+  return offers.map((offer) => {
+    offer[2] = Math.floor(Math.random() * 2);
+    return offer;
+  });
+}
+
+function getTimeInDays(dateFrom, dateTo) {
+  const days = dayjs(dateTo).diff(dayjs(dateFrom), 'days');
   return days !== 0 ? `${days}D` : '';
 }
 
-function getTimeInHours(startTime, endTime) {
-  const hours = dayjs(endTime).diff(dayjs(startTime), 'hours') % 24;
+function getTimeInHours(dateFrom, dateTo) {
+  const hours = dayjs(dateTo).diff(dayjs(dateFrom), 'hours') % 24;
   return hours !== 0 ? `${hours}H` : '';
 }
 
-function getTimeInMinutes(startTime, endTime) {
-  const minutes = dayjs(endTime).diff(dayjs(startTime), 'minutes') % 60;
+function getTimeInMinutes(dateFrom, dateTo) {
+  const minutes = dayjs(dateTo).diff(dayjs(dateFrom), 'minutes') % 60;
   return minutes !== 0 ? `${minutes}M` : '';
 }
 
 function getTripInfoTitle(cities) {
-  return cities.reduce((acc, city, index) => {
-    if (index !== cities.length - 1) {
-      acc += `${city} &mdash; `;
-    } else {
-      acc += `${city}`;
-    }
-    return acc;
-  }, '');
+  if (cities.length > 3) {
+    return `${cities[0]} &mdash; ... &mdash; ${cities[cities.length - 1]}`;
+  } else {
+    return cities.reduce((acc, city, index) => {
+      if (index !== cities.length - 1) {
+        acc += `${city} &mdash; `;
+      } else {
+        acc += `${city}`;
+      }
+      return acc;
+    }, '');
+  }
 }
 
 function getTripInfoStartDate(sortedPoints) {
-  return dayjs(sortedPoints[0].date.startTime).format('MMM DD');
+  return dayjs(sortedPoints[0].dateFrom).format('MMM DD');
 }
 
 function getTripInfoEndDate(sortedPoints) {
-  const startDate = sortedPoints[0].date.startTime;
-  const endDate = sortedPoints[sortedPoints.length - 1].date.endTime;
+  const startDate = sortedPoints[0].dateFrom;
+  const endDate = sortedPoints[sortedPoints.length - 1].dateTo;
   if (dayjs(startDate).format('MMM') === dayjs(endDate).format('MMM')) {
     return dayjs(endDate).format('DD');
   } else {
@@ -44,34 +56,56 @@ function getTripInfoEndDate(sortedPoints) {
   }
 }
 
-function updateItem(items, update) {
-  return items.map((item) => item.id === update.id ? update : item);
-}
-
 function sortPointDay(points) {
-  return points.sort((firstPoint, secondPoint) => new Date(firstPoint.date.startTime) - new Date(secondPoint.date.startTime));
+  return points.sort((firstPoint, secondPoint) => new Date(firstPoint.dateFrom) - new Date(secondPoint.dateFrom));
 }
 
 function sortPointTime(points) {
   return points.sort((firstPoint, secondPoint) =>
-    dayjs(firstPoint.date.startTime).diff(dayjs(firstPoint.date.endTime), 'minutes') -
-    dayjs(secondPoint.date.startTime).diff(dayjs(secondPoint.date.endTime), 'minutes'));
+    dayjs(firstPoint.dateFrom).diff(dayjs(firstPoint.dateTo), 'minutes') -
+    dayjs(secondPoint.dateFrom).diff(dayjs(secondPoint.dateTo), 'minutes'));
 }
 
 function sortPointPrice(points) {
   return points.sort((firstPoint, secondPoint) => secondPoint.price - firstPoint.price);
 }
 
+function isFuture(dateFrom) {
+  const formatedDate = dayjs(dateFrom).format('YYYY/MM/DD');
+  const currentDate = dayjs().format('YYYY/MM/DD');
+  return dayjs(formatedDate).isAfter(currentDate);
+}
+
+function isPresent(dateFrom) {
+  const formatedDate = dayjs(dateFrom).format('YYYY/MM/DD');
+  const currentDate = dayjs().format('YYYY/MM/DD');
+  return dayjs(formatedDate).isSame(currentDate);
+}
+
+function isPast(dateFrom) {
+  const formatedDate = dayjs(dateFrom).format('YYYY/MM/DD');
+  const currentDate = dayjs().format('YYYY/MM/DD');
+  return dayjs(formatedDate).isBefore(currentDate);
+}
+
+const filter = {
+  [FilterType.EVERYTHING]: (points) => points,
+  [FilterType.FUTURE]: (points) => points.filter((point) => isFuture(point.dateFrom)),
+  [FilterType.PRESENT]: (points) => points.filter((point) => isPresent(point.dateFrom)),
+  [FilterType.PAST]: (points) => points.filter((point) => isPast(point.dateFrom)),
+};
+
 export {
   getRandomArrayElement,
+  getRandomCheckedOffers,
   getTimeInDays,
   getTimeInHours,
   getTimeInMinutes,
   getTripInfoTitle,
   getTripInfoStartDate,
   getTripInfoEndDate,
-  updateItem,
   sortPointDay,
   sortPointTime,
   sortPointPrice,
+  filter,
 };

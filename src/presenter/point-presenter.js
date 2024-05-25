@@ -6,33 +6,40 @@ import dayjs from 'dayjs';
 
 export default class PointPresenter {
   #point = null;
+  #allOffers = [];
+  #allDestinations = [];
   #pointComponent = null;
   #editPointComponent = null;
   #pointsListContainer = null;
   #handleDataChange = null;
   #handleModeChange = null;
-  #mode = null;
+  #mode = Mode.DEFAULT;
 
-  constructor({ pointsListContainer, onDataChange, onModeChange, mode }) {
+  constructor({ pointsListContainer, onDataChange, onModeChange }) {
     this.#pointsListContainer = pointsListContainer;
     this.#handleDataChange = onDataChange;
     this.#handleModeChange = onModeChange;
-    this.#mode = mode;
   }
 
-  init(point) {
+  init(point, allOffers, allDestinations) {
     this.#point = point;
+    this.#allOffers = allOffers;
+    this.#allDestinations = allDestinations;
     const prevPointComponent = this.#pointComponent;
     const prevEditPointComponent = this.#editPointComponent;
 
     this.#pointComponent = new PointView({
       point: this.#point,
+      allOffers: this.#allOffers,
+      allDestinations: this.#allDestinations,
       onEditClick: this.#handleEditClick,
       onFavoriteClick: this.#handleFavoriteClick,
     });
 
     this.#editPointComponent = new EditPointView({
       point: this.#point,
+      allOffers: this.#allOffers,
+      allDestinations: this.#allDestinations,
       onEditPointReset: this.#handleEditPointReset,
       onEditPointSave: this.#handleEditPointSave,
       onEditDeletePoint: this.#handleEditDeletePoint,

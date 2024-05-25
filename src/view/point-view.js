@@ -1,20 +1,25 @@
 import dayjs from 'dayjs';
-import { getTimeInDays, getTimeInHours, getTimeInMinutes } from '../utils';
+import { getTimeInDays, getTimeInHours, getTimeInMinutes } from '../utils/point';
 import AbstractView from '../framework/view/abstract-view';
 
-function createNewPointOfferTemplate(offers) {
+function createNewPointOfferTemplate(offers, currentOffers) {
   return (
     `<ul class="event__selected-offers">
-      ${offers.reduce((acc, [offer, price, isCheched]) => (acc += isCheched ? `<li class="event__offer">
-        <span class="event__offer-title">${offer}</span>
+      ${currentOffers.reduce((acc, { id, title, price }) =>
+      (acc += offers.includes(id) ? `<li class="event__offer">
+        <span class="event__offer-title">${title}</span>
           &plus;&euro;&nbsp;
         <span class="event__offer-price">${price}</span>
       </li>` : ''), '')}
-    </ul>`);
+    </ul>`
+  );
 }
 
-function createNewPointTemplate(point) {
-  const { type, city, price, dateFrom, dateTo, offers, isFavorite } = point;
+function createNewPointTemplate(point, allOffers, allDestinations) {
+  const { type, basePrice, dateFrom, dateTo, destination, offers, isFavorite } = point;
+  const currentOffers = allOffers.find((obj) => obj.type === type).offers;
+  const currentDestination = allDestinations.find((destintn) => destintn.id === destination);
+  const { name } = currentDestination;
   const days = getTimeInDays(dateFrom, dateTo);
   const hours = getTimeInHours(dateFrom, dateTo);
   const minutes = getTimeInMinutes(dateFrom, dateTo);
@@ -27,7 +32,7 @@ function createNewPointTemplate(point) {
         <div class="event__type">
           <img class="event__type-icon" width="42" height="42" src="img/icons/${type}.png" alt="Event type icon">
         </div>
-        <h3 class="event__title">${type} ${city}</h3>
+        <h3 class="event__title">${type} ${name}</h3>
         <div class="event__schedule">
           <p class="event__time">
             <time class="event__start-time" datetime="${dateFrom}">${dayjs(dateFrom).format('HH:mm')}</time>
@@ -37,11 +42,11 @@ function createNewPointTemplate(point) {
           <p class="event__duration">${days} ${hours} ${minutes}</p>
         </div>
         <p class="event__price">
-          &euro;&nbsp;<span class="event__price-value">${price ? price : ''}</span>
+          &euro;&nbsp;<span class="event__price-value">${basePrice ? basePrice : ''}</span>
         </p>
         <h4 class="visually-hidden">Offers:</h4>
 
-        ${createNewPointOfferTemplate(offers)}
+        ${createNewPointOfferTemplate(offers, currentOffers)}
 
         <button class="event__favorite-btn ${eventFavoriteClass}" type="button">
           <span class="visually-hidden">Add to favorite</span>
@@ -53,17 +58,22 @@ function createNewPointTemplate(point) {
           <span class="visually-hidden">Open event</span>
         </button>
       </div>
-    </li>`);
+    </li>`
+  );
 }
 
 export default class PointView extends AbstractView {
   #point = null;
+  #allOffers = [];
+  #allDestinations = [];
   #handleEditClick = null;
   #handleFavoriteClick = null;
 
-  constructor({ point, onEditClick, onFavoriteClick }) {
+  constructor({ point, allOffers, allDestinations, onEditClick, onFavoriteClick }) {
     super();
     this.#point = point;
+    this.#allOffers = allOffers;
+    this.#allDestinations = allDestinations;
     this.#handleEditClick = onEditClick;
     this.#handleFavoriteClick = onFavoriteClick;
 
@@ -72,7 +82,7 @@ export default class PointView extends AbstractView {
   }
 
   get template() {
-    return createNewPointTemplate(this.#point);
+    return createNewPointTemplate(this.#point, this.#allOffers, this.#allDestinations);
   }
 
   #editClickHandler = (evt) => {

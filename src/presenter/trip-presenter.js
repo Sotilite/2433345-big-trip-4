@@ -157,7 +157,7 @@ export default class TripPresenter {
       onResetMode: this.#handleResetMode,
       newEventBtn: this.#newEventBtn,
     });
-    this.#newPointPresenter.init();
+    this.#newPointPresenter.init(this.offers, this.destinations);
     this.#pointPresenters.forEach((presenter) => presenter.resetView());
   }
 
@@ -188,13 +188,13 @@ export default class TripPresenter {
 
   #handleViewAction = (actionType, updateType, updatedPoint) => {
     switch(actionType) {
-      case UserAction.UPDATE_TASK:
+      case UserAction.UPDATE_POINT:
         this.#pointsModel.updatePoint(updateType, updatedPoint);
         break;
-      case UserAction.ADD_TASK:
+      case UserAction.ADD_POINT:
         this.#pointsModel.addPoint(updateType, updatedPoint);
         break;
-      case UserAction.DELETE_TASK:
+      case UserAction.DELETE_POINT:
         this.#pointsModel.deletePoint(updateType, updatedPoint);
     }
   };

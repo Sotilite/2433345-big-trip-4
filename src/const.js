@@ -1,5 +1,17 @@
 const TYPE_POINT = ['taxi', 'bus', 'train', 'ship', 'drive', 'flight', 'check-in', 'sightseeing', 'restaurant'];
 
+const DEFAULT_TYPE = 'taxi';
+
+const DEFAULT_POINT = {
+  type: DEFAULT_TYPE,
+  basePrice: null,
+  dateFrom: new Date(),
+  dateTo: new Date(),
+  destination: null,
+  offers: [],
+  isFavorite: false,
+};
+
 const FilterType = {
   EVERYTHING: 'everything',
   FUTURE: 'future',
@@ -23,9 +35,9 @@ const SortType = {
 };
 
 const UserAction = {
-  UPDATE_TASK: 'UPDATE_TASK',
-  ADD_TASK: 'ADD_TASK',
-  DELETE_TASK: 'DELETE_TASK',
+  UPDATE_POINT: 'UPDATE_POINT',
+  ADD_POINT: 'ADD_POINT',
+  DELETE_POINT: 'DELETE_POINT',
 };
 
 const UpdateType = {
@@ -41,4 +53,4 @@ const Mode = {
   CREATING: 'CREATING',
 };
 
-export { TYPE_POINT, FilterType, FilterMessage, SortType, UserAction, UpdateType, Mode };
+export { DEFAULT_POINT, TYPE_POINT, FilterType, FilterMessage, SortType, UserAction, UpdateType, Mode };

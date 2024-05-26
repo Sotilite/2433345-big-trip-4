@@ -53,4 +53,9 @@ const Mode = {
   CREATING: 'CREATING',
 };
 
-export { DEFAULT_POINT, TYPE_POINT, FilterType, FilterMessage, SortType, UserAction, UpdateType, Mode };
+const TimeLimit = {
+  LOWER_LIMIT: 350,
+  UPPER_LIMIT: 1000,
+};
+
+export { DEFAULT_POINT, TYPE_POINT, FilterType, FilterMessage, SortType, UserAction, UpdateType, Mode, TimeLimit };

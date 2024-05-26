@@ -6,6 +6,7 @@ import dayjs from 'dayjs';
 
 export default class PointPresenter {
   #point = null;
+  #oldPoint = null;
   #allOffers = [];
   #allDestinations = [];
   #pointComponent = null;
@@ -23,6 +24,7 @@ export default class PointPresenter {
 
   init(point, allOffers, allDestinations) {
     this.#point = point;
+    this.#oldPoint = JSON.parse(JSON.stringify(point));
     this.#allOffers = allOffers;
     this.#allDestinations = allDestinations;
     const prevPointComponent = this.#pointComponent;
@@ -73,6 +75,42 @@ export default class PointPresenter {
     }
   };
 
+  setSaving() {
+    if (this.#mode === Mode.EDITING) {
+      this.#editPointComponent.updateElement({
+        isDisabled: true,
+        isSaving: true,
+      });
+    }
+  }
+
+  setDeleting() {
+    if (this.#mode === Mode.EDITING) {
+      this.#editPointComponent.updateElement({
+        isDisabled: true,
+        isDeleting: true,
+      });
+    }
+  }
+
+  setAborting() {
+    if (this.#mode === Mode.DEFAULT) {
+      this.#pointComponent.shake();
+      return;
+    }
+
+    const resetFormState = () => {
+      this.#editPointComponent.updateElement({
+        ...this.#oldPoint,
+        isDisabled: false,
+        isSaving: false,
+        isDeleting: false,
+      });
+    };
+
+    this.#editPointComponent.shake(resetFormState);
+  }
+
   #replacePointToForm = () => {
     replace(this.#editPointComponent, this.#pointComponent);
     document.addEventListener('keydown', this.#escKeydown);
@@ -105,20 +143,20 @@ export default class PointPresenter {
     );
   };
 
-  #handleEditPointReset = (oldPoint) => {
+  #handleEditPointReset = () => {
     this.#replaceFormToPoint();
-    this.#handleEditPointSave(oldPoint);
+    this.#handleEditPointSave();
   };
 
-  #handleEditPointSave = (updatedPoint) => {
-    const isMinorUpdate = dayjs(updatedPoint.dateFrom).isSame(this.#point.dateFrom)
-    || dayjs(updatedPoint.dateTo).isSame(this.#point.dateTo)
-    || updatedPoint.price === this.#point.price;
+  #handleEditPointSave = () => {
+    const isMinorUpdate = dayjs(this.#oldPoint.dateFrom).isSame(this.#point.dateFrom)
+    || dayjs(this.#oldPoint.dateTo).isSame(this.#point.dateTo)
+    || this.#oldPoint.price === this.#point.price;
 
     this.#handleDataChange(
       UserAction.UPDATE_POINT,
       isMinorUpdate ? UpdateType.MINOR : UpdateType.PATCH,
-      updatedPoint,
+      this.#oldPoint,
     );
   };
 

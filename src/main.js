@@ -2,7 +2,7 @@ import TripPresenter from './presenter/trip-presenter';
 import PointsModel from './model/points-model';
 import PointsApiService from './points-api-service';
 
-const AUTHORIZATION = 'Basic Hs12pS44wSl2dwetgEWe34J';
+const AUTHORIZATION = 'Basic Hs12p4wSl2dwetgEWe34J';
 const END_POINT = 'https://21.objects.htmlacademy.pro/big-trip';
 
 const tripInfoContainer = document.querySelector('.trip-main');

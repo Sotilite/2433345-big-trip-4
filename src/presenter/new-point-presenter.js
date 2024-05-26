@@ -39,6 +39,25 @@ export default class NewPointPresenter {
     document.addEventListener('keydown', this.#escKeyDownHandler);
   }
 
+  setSaving() {
+    this.#editPointComponent.updateElement({
+      isDisabled: true,
+      isSaving: true,
+    });
+  }
+
+  setAborting() {
+    const resetFormState = () => {
+      this.#editPointComponent.updateElement({
+        isDisabled: false,
+        isSaving: false,
+        isDeleting: false,
+      });
+    };
+
+    this.#editPointComponent.shake(resetFormState);
+  }
+
   destroy() {
     if (!this.#editPointComponent) {
       return;
@@ -52,12 +71,12 @@ export default class NewPointPresenter {
   }
 
   #handleEditPointSave = (updatedPoint) => {
-    this.destroy();
     this.#handleDataChange(
       UserAction.ADD_POINT,
       UpdateType.MAJOR,
       updatedPoint,
     );
+    this.destroy();
   };
 
   #handleEditCancelPoint = () => {

@@ -1,23 +1,23 @@
-// export default class DestinationsModel {
-//   #service = null;
-//   #destinations = [];
+import Observable from '../framework/observable';
 
-//   constructor(service) {
-//     super();
+export default class DestinationsModel extends Observable {
+  #service = null;
+  #destinations = [];
 
-//   }
+  constructor(service) {
+    super();
+    this.#service = service;
+  }
 
-//   get destinations() {
-//     return this.#destinations;
-//   }
+  get destinations() {
+    return this.#destinations;
+  }
 
-//   async init() {
-//     try {
-//         const destinations = await this.#pointsApiService.points;
-//         this.#destinations = destinations.map(this.#adaptToClient);
-//         window.console.log(this.#destinations);
-//       } catch(err) {
-//         this.#destinations = [];
-//       }
-//   }
-// }
+  async init() {
+    try {
+      this.#destinations = await this.#service.destinations;
+    } catch(err) {
+      this.#destinations = [];
+    }
+  }
+}

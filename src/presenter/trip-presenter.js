@@ -17,6 +17,8 @@ export default class TripPresenter {
   #pointsListContainer = new PointsListView();
   #containers = null;
   #pointsModel = null;
+  #offersModel = null;
+  #destinationsModel = null;
   #filterModel = new FilterModel();
   #filterPresenter = null;
   #newPointPresenter = null;
@@ -34,9 +36,11 @@ export default class TripPresenter {
     upperLimit: TimeLimit.UPPER_LIMIT
   });
 
-  constructor({ containers, pointsModel, newEventBtn }) {
+  constructor({ containers, pointsModel, offersModel, destinationsModel, newEventBtn }) {
     this.#containers = containers;
     this.#pointsModel = pointsModel;
+    this.#offersModel = offersModel;
+    this.#destinationsModel = destinationsModel;
     this.#newEventBtn = newEventBtn;
     this.#filterModel.addObserver(this.#handleModelEvent);
     this.#pointsModel.addObserver(this.#handleModelEvent);
@@ -60,11 +64,11 @@ export default class TripPresenter {
   }
 
   get destinations() {
-    return this.#pointsModel.destinations;
+    return this.#destinationsModel.destinations;
   }
 
   get offers() {
-    return this.#pointsModel.offers;
+    return this.#offersModel.offers;
   }
 
   init() {
@@ -90,7 +94,7 @@ export default class TripPresenter {
     }
 
     if (this.points.length !== 0) {
-      this.#tripInfoComponent = new TripInfoView(this.points, this.destinations);
+      this.#tripInfoComponent = new TripInfoView(this.points, this.offers, this.destinations);
       render(this.#tripInfoComponent, this.#containers.tripInfo, RenderPosition.AFTERBEGIN);
       this.#renderSort();
       render(this.#pointsListContainer, this.#containers.event);
@@ -206,6 +210,7 @@ export default class TripPresenter {
         this.#newPointPresenter.setSaving();
         try {
           await this.#pointsModel.addPoint(updateType, updatedPoint);
+          this.#newPointPresenter.destroy();
         } catch {
           this.#newPointPresenter.setAborting();
         }

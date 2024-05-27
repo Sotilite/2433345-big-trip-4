@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import { getTimeInDays, getTimeInHours, getTimeInMinutes } from '../utils/point';
+import { getTime } from '../utils/point';
 import AbstractView from '../framework/view/abstract-view';
 
 function createNewPointOfferTemplate(offers, currentOffers) {
@@ -20,9 +20,7 @@ function createNewPointTemplate(point, allOffers, allDestinations) {
   const currentOffers = allOffers.find((obj) => obj.type === type).offers;
   const currentDestination = allDestinations.find((destintn) => destintn.id === destination);
   const { name } = currentDestination;
-  const days = getTimeInDays(dateFrom, dateTo);
-  const hours = getTimeInHours(dateFrom, dateTo);
-  const minutes = getTimeInMinutes(dateFrom, dateTo);
+  const time = getTime(dateFrom, dateTo);
   const eventFavoriteClass = isFavorite ? 'event__favorite-btn--active' : '';
 
   return (
@@ -39,7 +37,7 @@ function createNewPointTemplate(point, allOffers, allDestinations) {
               &mdash;
             <time class="event__end-time" datetime="${dateTo}">${dayjs(dateTo).format('HH:mm')}</time>
           </p>
-          <p class="event__duration">${days} ${hours} ${minutes}</p>
+          <p class="event__duration">${time}</p>
         </div>
         <p class="event__price">
           &euro;&nbsp;<span class="event__price-value">${basePrice ? basePrice : ''}</span>

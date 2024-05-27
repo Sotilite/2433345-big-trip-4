@@ -1,5 +1,7 @@
 import TripPresenter from './presenter/trip-presenter';
 import PointsModel from './model/points-model';
+import OffersModel from './model/offers-model';
+import DestinationsModel from './model/destinations-model';
 import PointsApiService from './points-api-service';
 
 const AUTHORIZATION = 'Basic Hs12p4wSl2dwetgEWe34J';
@@ -16,11 +18,14 @@ const containers = {
   event: eventContainer,
 };
 
-const pointsModel = new PointsModel({ pointsApiService: new PointsApiService(END_POINT, AUTHORIZATION) });
-const tripPresenter = new TripPresenter({ containers, pointsModel, newEventBtn });
+const pointsApiService = new PointsApiService(END_POINT, AUTHORIZATION);
+const offersModel = new OffersModel(pointsApiService);
+const destinationsModel = new DestinationsModel(pointsApiService);
+const pointsModel = new PointsModel({ pointsApiService, offersModel, destinationsModel });
+const tripPresenter = new TripPresenter({ containers, pointsModel, offersModel, destinationsModel, newEventBtn });
+
+pointsModel.init().finally(() => {
+  newEventBtn.style.visibility = 'visible';
+});
 
 tripPresenter.init();
-pointsModel.init().
-  finally(() => {
-    newEventBtn.style.visibility = 'visible';
-  });

@@ -144,19 +144,19 @@ export default class PointPresenter {
   };
 
   #handleEditPointReset = () => {
+    this.#editPointComponent.reset(this.#oldPoint);
     this.#replaceFormToPoint();
-    this.#handleEditPointSave();
   };
 
-  #handleEditPointSave = () => {
-    const isMinorUpdate = dayjs(this.#oldPoint.dateFrom).isSame(this.#point.dateFrom)
-    || dayjs(this.#oldPoint.dateTo).isSame(this.#point.dateTo)
-    || this.#oldPoint.price === this.#point.price;
+  #handleEditPointSave = (updatedPoint) => {
+    const isMinorUpdate = dayjs(updatedPoint.dateFrom).isSame(this.#point.dateFrom)
+    || dayjs(updatedPoint.dateTo).isSame(this.#point.dateTo)
+    || updatedPoint.price === this.#point.price;
 
     this.#handleDataChange(
       UserAction.UPDATE_POINT,
       isMinorUpdate ? UpdateType.MINOR : UpdateType.PATCH,
-      this.#oldPoint,
+      updatedPoint,
     );
   };
 

@@ -3,15 +3,16 @@ import dayjs from 'dayjs';
 import flatpickr from 'flatpickr';
 import 'flatpickr/dist/flatpickr.min.css';
 import AbstractStatefulView from '../framework/view/abstract-stateful-view';
-import { DEFAULT_POINT, TYPE_POINT, Mode } from '../const';
+import { DEFAULT_POINT, TYPE_POINTS, Mode } from '../const';
 
 function createEditTypePointTemplate(currentType) {
   return (
     `<div class="event__type-list" >
       <fieldset class="event__type-group">
         <legend class="visually-hidden">Event type</legend>
-        ${TYPE_POINT.reduce((acc, type) => (`${acc}<div class="event__type-item">
-          <input id="event-type-${type}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${type}" ${type === currentType ? 'checked' : ''}>
+        ${TYPE_POINTS.reduce((acc, type) => (`${acc}<div class="event__type-item">
+          <input id="event-type-${type}-1" class="event__type-input  visually-hidden" type="radio" 
+            name="event-type" value="${type}" ${type === currentType ? 'checked' : ''}>
           <label class="event__type-label  event__type-label--${type}" for="event-type-${type}-1">${type[0].toUpperCase() + type.slice(1)}</label>
         </div>`), '')}
       </fieldset>
@@ -172,7 +173,7 @@ export default class EditPointView extends AbstractStatefulView {
 
   constructor({ point = DEFAULT_POINT, allOffers, allDestinations, onEditPointReset, onEditPointSave, onEditDeletePoint, mode = Mode.EDITING }) {
     super();
-    this._setState(this.parsePointToState(point));
+    this._setState(this.#parsePointToState(point));
     this.#allOffers = allOffers;
     this.#allDestinations = allDestinations;
     this.#handleEditPointReset = onEditPointReset;
@@ -187,24 +188,7 @@ export default class EditPointView extends AbstractStatefulView {
     return createEditPointTemplate(this._state, this.#allOffers, this.#allDestinations, this.#mode);
   }
 
-  parsePointToState(point) {
-    return {
-      ...point,
-      isDisabled: false,
-      isSaving: false,
-      isDeleting: false,
-    };
-  }
-
-  parseStateToPoint(state) {
-    const point = { ...state };
-
-    delete point.isDisabled;
-    delete point.isSaving;
-    delete point.isDeleting;
-
-    return point;
-  }
+  reset = (point) => this.updateElement(this.#parsePointToState(point));
 
   _restoreHandlers() {
     if (this.#mode === Mode.EDITING) {
@@ -219,6 +203,25 @@ export default class EditPointView extends AbstractStatefulView {
     this.element.querySelector('.event__save-btn').addEventListener('click', this.#editPointSaveHandler);
     this.element.querySelector('.event__reset-btn').addEventListener('click', this.#editDeletePointHandler);
     this.#setFlatpickr();
+  }
+
+  #parsePointToState(point) {
+    return {
+      ...point,
+      isDisabled: false,
+      isSaving: false,
+      isDeleting: false,
+    };
+  }
+
+  #parseStateToPoint(state) {
+    const point = { ...state };
+
+    delete point.isDisabled;
+    delete point.isSaving;
+    delete point.isDeleting;
+
+    return point;
   }
 
   #setFlatpickr() {
@@ -313,12 +316,12 @@ export default class EditPointView extends AbstractStatefulView {
 
   #editPointSaveHandler = (evt) => {
     evt.preventDefault();
-    this.#handleEditPointSave(this.parseStateToPoint(this._state));
+    this.#handleEditPointSave(this.#parseStateToPoint(this._state));
   };
 
   #editDeletePointHandler = (evt) => {
     evt.preventDefault();
-    this.#handleEditDeletePoint(this.parseStateToPoint(this._state));
+    this.#handleEditDeletePoint(this.#parseStateToPoint(this._state));
   };
 
   #editPointResetHandler = (evt) => {

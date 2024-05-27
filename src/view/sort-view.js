@@ -10,8 +10,7 @@ function createSortTemplate(currentSortType) {
         ${DISABLED_SORTS.includes(sortType) ? 'disabled' : ''} data-sort-type="${sortType}" ${currentSortType === sortType ? 'checked' : ''}>
         <label class="trip-sort__btn" for="sort-${sortType}">${sortType[0].toUpperCase() + sortType.slice(1)}</label>
       </div>`), '')}
-    </form>`
-  );
+    </form>`);
 }
 
 export default class SortView extends AbstractView {

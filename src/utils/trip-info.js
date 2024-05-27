@@ -1,7 +1,9 @@
 import dayjs from 'dayjs';
 
 function getTripInfoTitle(cities) {
-  if (cities.length > 3) {
+  const NUMBER_OF_VISIBLE_CITIES = 3;
+
+  if (cities.length > NUMBER_OF_VISIBLE_CITIES) {
     return `${cities[0]} &mdash; ... &mdash; ${cities[cities.length - 1]}`;
   } else {
     return cities.reduce((acc, city, index) => {
@@ -29,4 +31,17 @@ function getTripInfoEndDate(sortedPoints) {
   }
 }
 
-export { getTripInfoTitle, getTripInfoStartDate, getTripInfoEndDate };
+function calculateTotal(points, offers) {
+  let total = points.reduce((acc, point) => acc + point.basePrice, 0);
+  for (let i = 0; i < points.length; i++) {
+    const currentOffers = offers.find((offer) => offer.type === points[i].type).offers;
+    currentOffers.forEach((offer) => {
+      if (points[i].offers.includes(offer.id)) {
+        total += offer.price;
+      }
+    });
+  }
+  return total;
+}
+
+export { getTripInfoTitle, getTripInfoStartDate, getTripInfoEndDate, calculateTotal };

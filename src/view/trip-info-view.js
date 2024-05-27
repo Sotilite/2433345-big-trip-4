@@ -1,8 +1,8 @@
-import { getTripInfoTitle, getTripInfoStartDate, getTripInfoEndDate } from '../utils/trip-info';
+import { getTripInfoTitle, getTripInfoStartDate, getTripInfoEndDate, calculateTotal } from '../utils/trip-info';
 import AbstractView from '../framework/view/abstract-view';
 
-function createTripInfoView(points, destinations) {
-  const total = points.reduce((acc, point) => acc + point.basePrice, 0);
+function createTripInfoView(points, offers, destinations) {
+  const total = calculateTotal(points, offers);
   const sortedPoints = points.sort((firstDate, secondDate) => new Date(firstDate.dateFrom) - new Date(secondDate.dateFrom));
   const cities = sortedPoints.map((point) => destinations.find((destination) => destination.id === point.destination).name);
   const tripInfoTitle = getTripInfoTitle(cities);
@@ -22,15 +22,17 @@ function createTripInfoView(points, destinations) {
 
 export default class TripInfoView extends AbstractView {
   #points = null;
+  #offers = null;
   #destinations = null;
 
-  constructor(points, destinations) {
+  constructor(points, offers, destinations) {
     super();
     this.#points = points;
+    this.#offers = offers;
     this.#destinations = destinations;
   }
 
   get template() {
-    return createTripInfoView(this.#points, this.#destinations);
+    return createTripInfoView(this.#points, this.#offers, this.#destinations);
   }
 }

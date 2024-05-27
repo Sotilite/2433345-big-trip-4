@@ -1,4 +1,4 @@
-const TYPE_POINT = ['taxi', 'bus', 'train', 'ship', 'drive', 'flight', 'check-in', 'sightseeing', 'restaurant'];
+const TYPE_POINTS = ['taxi', 'bus', 'train', 'ship', 'drive', 'flight', 'check-in', 'sightseeing', 'restaurant'];
 
 const DEFAULT_TYPE = 'taxi';
 
@@ -34,6 +34,8 @@ const SortType = {
   OFFERS: 'offers',
 };
 
+const DISABLED_SORTS = ['event', 'offers'];
+
 const UserAction = {
   UPDATE_POINT: 'UPDATE_POINT',
   ADD_POINT: 'ADD_POINT',
@@ -58,4 +60,4 @@ const TimeLimit = {
   UPPER_LIMIT: 1000,
 };
 
-export { DEFAULT_POINT, TYPE_POINT, FilterType, FilterMessage, SortType, UserAction, UpdateType, Mode, TimeLimit };
+export { DEFAULT_POINT, TYPE_POINTS, FilterType, FilterMessage, SortType, DISABLED_SORTS, UserAction, UpdateType, Mode, TimeLimit };

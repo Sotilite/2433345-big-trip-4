@@ -1,9 +1,9 @@
 import dayjs from 'dayjs';
 
 function getTripInfoTitle(cities) {
-  const NUMBER_OF_VISIBLE_CITIES = 3;
+  const numberOfVisibleCities = 3;
 
-  if (cities.length > NUMBER_OF_VISIBLE_CITIES) {
+  if (cities.length > numberOfVisibleCities) {
     return `${cities[0]} &mdash; ... &mdash; ${cities[cities.length - 1]}`;
   } else {
     return cities.reduce((acc, city, index) => {
@@ -33,14 +33,14 @@ function getTripInfoEndDate(sortedPoints) {
 
 function calculateTotal(points, offers) {
   let total = points.reduce((acc, point) => acc + point.basePrice, 0);
-  for (let i = 0; i < points.length; i++) {
-    const currentOffers = offers.find((offer) => offer.type === points[i].type).offers;
+  points.forEach((point) => {
+    const currentOffers = offers.find((offer) => offer.type === point.type).offers;
     currentOffers.forEach((offer) => {
-      if (points[i].offers.includes(offer.id)) {
+      if (point.offers.includes(offer.id)) {
         total += offer.price;
       }
     });
-  }
+  });
   return total;
 }
 

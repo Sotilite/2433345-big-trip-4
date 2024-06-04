@@ -1,12 +1,12 @@
 const TYPE_POINTS = ['taxi', 'bus', 'train', 'ship', 'drive', 'flight', 'check-in', 'sightseeing', 'restaurant'];
 
-const DEFAULT_TYPE = 'taxi';
+const DEFAULT_TYPE = 'flight';
 
 const DEFAULT_POINT = {
   type: DEFAULT_TYPE,
-  basePrice: null,
-  dateFrom: new Date(),
-  dateTo: new Date(),
+  basePrice: 0,
+  dateFrom: null,
+  dateTo: null,
   destination: null,
   offers: [],
   isFavorite: false,

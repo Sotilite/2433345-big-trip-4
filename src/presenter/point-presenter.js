@@ -64,11 +64,6 @@ export default class PointPresenter {
     remove(prevEditPointComponent);
   }
 
-  destroy = () => {
-    remove(this.#pointComponent);
-    remove(this.#editPointComponent);
-  };
-
   resetView = () => {
     if (this.#mode !== Mode.DEFAULT) {
       this.#replaceFormToPoint();
@@ -111,20 +106,25 @@ export default class PointPresenter {
     this.#editPointComponent.shake(resetFormState);
   }
 
+  destroy = () => {
+    remove(this.#pointComponent);
+    remove(this.#editPointComponent);
+  };
+
   #replacePointToForm = () => {
     replace(this.#editPointComponent, this.#pointComponent);
-    document.addEventListener('keydown', this.#escKeydown);
+    document.addEventListener('keydown', this.#escKeyDownHandler);
     this.#handleModeChange();
     this.#mode = Mode.EDITING;
   };
 
   #replaceFormToPoint = () => {
     replace(this.#pointComponent, this.#editPointComponent);
-    document.removeEventListener('keydown', this.#escKeydown);
+    document.removeEventListener('keydown', this.#escKeyDownHandler);
     this.#mode = Mode.DEFAULT;
   };
 
-  #escKeydown = (evt) => {
+  #escKeyDownHandler = (evt) => {
     if (evt.key === 'Esc' || evt.key === 'Escape') {
       evt.preventDefault();
       this.#replaceFormToPoint();

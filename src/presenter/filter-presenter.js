@@ -35,6 +35,10 @@ export default class FilterPresenter {
     remove(prevFilterComponent);
   }
 
+  destroy() {
+    remove(this.#filterComponent);
+  }
+
   #handleModelEvent = () => {
     this.init();
   };
@@ -46,8 +50,4 @@ export default class FilterPresenter {
 
     this.#filterModel.setFilter(UpdateType.MAJOR, filterType);
   };
-
-  destroy() {
-    remove(this.#filterComponent);
-  }
 }

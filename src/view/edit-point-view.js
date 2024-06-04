@@ -35,9 +35,35 @@ function createEditPointDestinationTemplate(type, name, cities, isDisabled) {
   );
 }
 
+function createEditPointTimeTemplate(dateFrom, dateTo, isDisabled) {
+  return (
+    `<div class="event__field-group  event__field-group--time">
+      <label class="visually-hidden" for="event-start-time-1">From</label>
+      <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" 
+        value="${dateFrom ? dayjs(dateFrom).format('DD/MM/YY HH:mm') : ''}" ${isDisabled ? 'disabled' : ''}>
+        &mdash;
+      <label class="visually-hidden" for="event-end-time-1">To</label>
+      <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" 
+        value="${dateTo ? dayjs(dateTo).format('DD/MM/YY HH:mm') : ''}" ${isDisabled ? 'disabled' : ''}>
+    </div>`
+  );
+}
+
+function createEditPointBasePriceTemplate(basePrice, isDisabled) {
+  return (
+    `<div class="event__field-group  event__field-group--price">
+      <label class="event__label" for="event-price-1">
+        <span class="visually-hidden">Price</span>
+        &euro;
+      </label>
+      <input class="event__input  event__input--price" id="event-price-1" type="number" name="event-price" 
+        value="${basePrice ? he.encode(String(basePrice)) : ''}" ${isDisabled ? 'disabled' : ''}>
+    </div>`
+  );
+}
+
 function createEditPointButtonsTemplate(mode, isDisabled, isSaving, isDeleting) {
-  const rollupBtn =
-  '<button class="event__rollup-btn" type="button">\
+  const rollupBtn = '<button class="event__rollup-btn" type="button">\
     <span class="visually-hidden">Open event</span>\
   </button>';
 
@@ -86,8 +112,21 @@ function createEditPointOfferTemplate(offers, currentOffers, isDisabled) {
   }
 }
 
+function createEditPointDescriptionTemplate(description) {
+  if (description) {
+    return (
+      `<section class="event__section  event__section--destination">\
+        <h3 class="event__section-title  event__section-title--destination">Destination</h3>\
+        <p class="event__destination-description">${description}</p>\
+      </section>`
+    );
+  } else {
+    return '';
+  }
+}
+
 function createEditPointPhotoTemplate(pictures) {
-  if (pictures !== null) {
+  if (pictures.length !== 0) {
     return (
       `<div class="event__photos-container">
         <div class="event__photos-tape">
@@ -100,12 +139,27 @@ function createEditPointPhotoTemplate(pictures) {
   }
 }
 
+function createEventDetailsTemplate(offers, currentOffers, description, pictures, isDisabled) {
+  if (currentOffers.length !== 0 || pictures.length !== 0 || description) {
+    return (
+      `<section class="event__details">
+        ${createEditPointOfferTemplate(offers, currentOffers, isDisabled)}
+        ${createEditPointDescriptionTemplate(description)}
+        ${createEditPointPhotoTemplate(pictures)}
+      </section>`
+    );
+  } else {
+    return '';
+  }
+}
+
 function createEditPointTemplate(point, allOffers, allDestinations, mode) {
   const { isDisabled, isSaving, isDeleting, type, basePrice, dateFrom, dateTo, destination, offers } = point;
   const currentOffers = allOffers.find((obj) => obj.type === type).offers;
   const currentDestination = allDestinations.find((destintn) => destintn.id === destination);
   const cities = new Set(allDestinations.map((destintn) => destintn.name));
-  let name, description, pictures = null;
+  let name, description = null;
+  let pictures = [];
   if (currentDestination) {
     name = currentDestination.name;
     description = currentDestination.description;
@@ -127,35 +181,14 @@ function createEditPointTemplate(point, allOffers, allDestinations, mode) {
             
           ${createEditPointDestinationTemplate(type, name, cities, isDisabled)}
 
-          <div class="event__field-group  event__field-group--time">
-            <label class="visually-hidden" for="event-start-time-1">From</label>
-            <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" 
-            value="${dateFrom ? dayjs(dateFrom).format('DD/MM/YY HH:mm') : ''}" ${isDisabled ? 'disabled' : ''}>
-              &mdash;
-            <label class="visually-hidden" for="event-end-time-1">To</label>
-            <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" 
-            value="${dateTo ? dayjs(dateTo).format('DD/MM/YY HH:mm') : ''}" ${isDisabled ? 'disabled' : ''}>
-          </div>
+          ${createEditPointTimeTemplate(dateFrom, dateTo, isDisabled)}
 
-          <div class="event__field-group  event__field-group--price">
-            <label class="event__label" for="event-price-1">
-              <span class="visually-hidden">Price</span>
-                &euro;
-            </label>
-            <input class="event__input  event__input--price" id="event-price-1" type="number" name="event-price" 
-              value="${basePrice ? he.encode(String(basePrice)) : ''}" ${isDisabled ? 'disabled' : ''}>
-          </div>
+          ${createEditPointBasePriceTemplate(basePrice, isDisabled)}
 
           ${createEditPointButtonsTemplate(mode, isDisabled, isSaving, isDeleting)}
         </header>
-        <section class="event__details">
-          ${createEditPointOfferTemplate(offers, currentOffers, isDisabled)}
-          <section class="event__section  event__section--destination">
-            <h3 class="event__section-title  event__section-title--destination">${description ? 'Destination' : ''}</h3>
-            <p class="event__destination-description">${description ? description : ''}</p>
-          </section>
-          ${createEditPointPhotoTemplate(pictures)}
-        </section>
+
+        ${createEventDetailsTemplate(offers, currentOffers, description, pictures, isDisabled)}
       </form>
     </li>`
   );
@@ -189,6 +222,20 @@ export default class EditPointView extends AbstractStatefulView {
   }
 
   reset = (point) => this.updateElement(this.#parsePointToState(point));
+
+  removeElement() {
+    super.removeElement();
+
+    if (this.#datepickerForStart) {
+      this.#datepickerForStart.destroy();
+      this.#datepickerForStart = null;
+    }
+
+    if (this.#datepickerForEnd) {
+      this.#datepickerForEnd.destroy();
+      this.#datepickerForEnd = null;
+    }
+  }
 
   _restoreHandlers() {
     if (this.#mode === Mode.EDITING) {
@@ -238,7 +285,6 @@ export default class EditPointView extends AbstractStatefulView {
       this.element.querySelectorAll('.event__input--time')[0],
       {
         ...commonConfig,
-        defaultDate: dayjs(this._state.dateFrom).format('DD/MM/YY HH:mm'),
         onClose: this.#editDateFromChangeHandler,
       }
     );
@@ -247,7 +293,6 @@ export default class EditPointView extends AbstractStatefulView {
       this.element.querySelectorAll('.event__input--time')[1],
       {
         ...commonConfig,
-        defaultDate: dayjs(this._state.dateTo).format('DD/MM/YY HH:mm'),
         onClose: this.#editDateToChangeHandler,
       }
     );
@@ -270,20 +315,6 @@ export default class EditPointView extends AbstractStatefulView {
       dateTo
     });
   };
-
-  removeElement() {
-    super.removeElement();
-
-    if (this.#datepickerForStart) {
-      this.#datepickerForStart.destroy();
-      this.#datepickerForStart = null;
-    }
-
-    if (this.#datepickerForEnd) {
-      this.#datepickerForEnd.destroy();
-      this.#datepickerForEnd = null;
-    }
-  }
 
   #editTypePointHandler = (evt) => {
     evt.preventDefault();

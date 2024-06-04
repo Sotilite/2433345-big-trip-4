@@ -16,18 +16,18 @@ function getTimeInMinutes(dateFrom, dateTo) {
 }
 
 function getTime(dateFrom, dateTo) {
-  const NUMBER_OF_ZEROS = 2;
+  const numberOfZeros = 2;
   const days = getTimeInDays(dateFrom, dateTo);
   const hours = getTimeInHours(dateFrom, dateTo);
   const minutes = getTimeInMinutes(dateFrom, dateTo);
   let time = '';
 
   if (days) {
-    time += `${days.padStart(NUMBER_OF_ZEROS, '0')}D `;
-  } if (hours) {
-    time += `${hours.padStart(NUMBER_OF_ZEROS, '0')}H `;
-  } if (minutes) {
-    time += `${minutes.padStart(NUMBER_OF_ZEROS, '0')}M`;
+    time += `${days.padStart(numberOfZeros, '0')}D `;
+  } if (hours || days) {
+    time += `${hours.padStart(numberOfZeros, '0')}H `;
+  } if (minutes || hours || days) {
+    time += `${minutes.padStart(numberOfZeros, '0')}M`;
   }
   return time;
 }

@@ -85,7 +85,7 @@ export default class TripPresenter {
       return;
     }
 
-    if (!this.offers.length && !this.destinations.length) {
+    if (!this.offers.length || !this.destinations.length) {
       this.#renderEmptyList({hasError: true});
       return;
     }

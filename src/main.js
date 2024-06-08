@@ -25,7 +25,7 @@ const pointsModel = new PointsModel({ pointsApiService, offersModel, destination
 const tripPresenter = new TripPresenter({ containers, pointsModel, offersModel, destinationsModel, newEventBtn });
 
 pointsModel.init().finally(() => {
-  newEventBtn.style.visibility = 'visible';
+  newEventBtn.style.visibility = offersModel.offers.length && destinationsModel.destinations.length ? 'visible' : 'hidden';
 });
 
 tripPresenter.init();

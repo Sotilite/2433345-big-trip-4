@@ -85,6 +85,11 @@ export default class TripPresenter {
       return;
     }
 
+    if (!this.offers.length && !this.destinations.length) {
+      this.#renderEmptyList({hasError: true});
+      return;
+    }
+
     this.#renderFilter();
 
     if (this.points.length === 0) {
@@ -121,8 +126,11 @@ export default class TripPresenter {
     render(this.#pointsListComponent, this.#containers.event);
   }
 
-  #renderEmptyList() {
-    this.#emptyListComponent = new EmptyListView(this.#filterModel.filter);
+  #renderEmptyList({hasError = false} = {}) {
+    this.#emptyListComponent = new EmptyListView({
+      currentFilterType: this.#filterModel.filter,
+      hasError,
+    });
     render(this.#emptyListComponent, this.#containers.event);
   }
 
